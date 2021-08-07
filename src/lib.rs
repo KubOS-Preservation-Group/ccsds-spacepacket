@@ -89,7 +89,7 @@ pub struct SpacePacket {
 
 impl LinkPacket for SpacePacket {
     fn build(
-        payload_type: u16,
+        app_proc_id: u16,
         secondary_header: SecondaryHeader,
         payload: &[u8],
     ) -> CommsResult<Box<Self>> {
@@ -98,7 +98,7 @@ impl LinkPacket for SpacePacket {
                 version: 0,
                 packet_type: 0,
                 sec_header_flag: 0,
-                app_proc_id: u16::from(payload_type),
+                app_proc_id: app_proc_id,
                 sequence_flags: 0,
                 sequence_count: 0,
                 data_length: (payload.len() + 10) as u16,
