@@ -27,9 +27,9 @@ use std::io::Cursor;
 pub type CommsResult<T> = Result<T, Error>;
 
 
-/// Generic LinkPacket trait which defines the internal packet requirements
+/// Generic Packet trait which defines the internal packet requirements
 /// of the communications service.
-pub trait LinkPacket {
+pub trait Packet {
     /// Parse packet from raw bytes
     fn parse(raw: &[u8]) -> CommsResult<Box<Self>>;
     /// Build packet from necessary parts
@@ -86,7 +86,7 @@ pub struct DataField {
     payload: Vec<u8>,
 }
 
-/// Structure used to implement SpacePacket version of LinkPacket
+/// Structure used to implement SpacePacket version of Packet
 #[derive(Eq, Debug, PartialEq)]
 pub struct SpacePacket {
     primary_header: PrimaryHeader,
@@ -104,7 +104,7 @@ impl DataField {
     }
 }
 
-impl LinkPacket for SpacePacket {
+impl Packet for SpacePacket {
     fn build(
         app_proc_id: u16,
         secondary_header: SecondaryHeader,
