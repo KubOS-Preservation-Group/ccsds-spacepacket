@@ -153,7 +153,7 @@ impl DataField {
     }
 
     fn length(&self) -> {
-        mem::size_of<self.secondary_header>() + self.payload.len()
+        mem::size_of<self.secondary_header>() + self.data_field.payload.len()
     }
 }
 
@@ -209,13 +209,13 @@ impl Packet for SpacePacket {
         //write secondary header here
         // bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
         // bytes.write_u16::<BigEndian>(self.secondary_header.destination_port)?;
-        bytes.append(&mut self.payload.clone());
+        bytes.append(&mut self.data_field.payload.clone());
 
         Ok(bytes)
     }
 
     fn payload(&self) -> Vec<u8> {
-        self.payload.clone()
+        self.data_field.payload.clone()
     }
 
     fn app_proc_id(&self) -> u16 {
