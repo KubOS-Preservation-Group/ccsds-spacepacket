@@ -81,12 +81,27 @@ struct PrimaryHeader {
 pub struct SecondaryHeader {
 }
 
+pub struct DataField {
+    secondary_header: SecondaryHeader,
+    payload: Vec<u8>,
+}
+
 /// Structure used to implement SpacePacket version of LinkPacket
 #[derive(Eq, Debug, PartialEq)]
 pub struct SpacePacket {
     primary_header: PrimaryHeader,
-    secondary_header: SecondaryHeader,
-    payload: Vec<u8>,
+    data_field: DataField,
+}
+
+impl DataField {
+
+    fn has_secondary_header(&self) -> bool {
+
+    }
+
+    fn length(&self) -> {
+        mem::size_of<self.secondary_header>() + self.payload.len()
+    }
 }
 
 impl LinkPacket for SpacePacket {
