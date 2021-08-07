@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+// Modifications by:
+//  - Adrian Edwards
 
 //! Packet Definition for SpacePacket
 
