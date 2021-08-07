@@ -57,6 +57,13 @@ pub trait Packet {
     }
 }
 
+///DataSegment represents a larger "chunk" of packet data, like a group of header values (such as the PrimaryHeader)
+pub trait DataSegment {
+    /// Parse packet from raw bytes
+    fn from_cursor(reader: Cursor) -> Self;
+    /// Create a bytes representation of the packet
+    fn to_bytes(&self) -> CommsResult<Vec<u8>>;
+}
 
 #[derive(Eq, Debug, PartialEq)]
 struct PrimaryHeader {
@@ -74,6 +81,52 @@ struct PrimaryHeader {
     sequence_count: u16,
     /// Packet Data Length - 2 bytes
     data_length: u16,
+}
+
+impl DataSegment for PrimaryHeader {
+    fn from_cursor(reader: Cursor) -> Self {
+    
+        let header_0 = reader.read_u16::<BigEndian>()?;
+        let version = ((header_0 & 0xE000) >> 13) as u8;
+        let packet_type = ((header_0 & 0x1000) >> 12) as u8;
+        let sec_header_flag = ((header_0 & 0x800) >> 11) as u8;
+        let app_proc_id = (header_0 & 0x7FF) as u16;
+
+        let header_1 = reader.read_u16::<BigEndian>()?;
+        let sequence_flags = ((header_1 & 0xC000) >> 14) as u8;
+        let sequence_count = (header_1 & 0x3FFF) as u16;
+
+        let data_length = reader.read_u16::<BigEndian>()?;
+
+        PrimaryHeader {
+            version,
+            packet_type,
+            sec_header_flag,
+            app_proc_id,
+            sequence_flags,
+            sequence_count,
+            data_length,
+        }
+    }
+
+    fn to_bytes(&self) -> CommsResult<Vec<u8>> {
+        let mut bytes = vec![];
+
+        let header_0: u16 = (self.app_proc_id) as u16
+            | u16::from(self.sec_header_flag) << 11
+            | u16::from(self.packet_type) << 12
+            | u16::from(self.version) << 13;
+
+        let header_1 = (self.sequence_count as u16)
+            | u16::from(self.sequence_flags) << 14;
+
+        let header_2 = self.data_length;
+
+        bytes.write_u16::<BigEndian>(header_0)?;
+        bytes.write_u16::<BigEndian>(header_1)?;
+        bytes.write_u16::<BigEndian>(header_2)?;
+        Ok(bytes)
+    }
 }
 
 //TODO make this subclassable or something so that projects can define their own custom thing per their own projects spec
@@ -128,39 +181,18 @@ impl Packet for SpacePacket {
     fn parse(raw: &[u8]) -> CommsResult<Box<Self>> {
         let mut reader = Cursor::new(raw.to_vec());
 
-        let header_0 = reader.read_u16::<BigEndian>()?;
-        let version = ((header_0 & 0xE000) >> 13) as u8;
-        let packet_type = ((header_0 & 0x1000) >> 12) as u8;
-        let sec_header_flag = ((header_0 & 0x800) >> 11) as u8;
-        let app_proc_id = (header_0 & 0x7FF) as u16;
-
-        let header_1 = reader.read_u16::<BigEndian>()?;
-        let sequence_flags = ((header_1 & 0xC000) >> 14) as u8;
-        let sequence_count = (header_1 & 0x3FFF) as u16;
-
-        let data_length = reader.read_u16::<BigEndian>()?;
+        let primary_header = PrimaryHeader.from_cursor(reader)
 
         //parse secondary header information here
+        let secondary_header = SecondaryHeader.from_cursor(reader)
         // let command_id = reader.read_u64::<BigEndian>()?;
         // let destination_port = reader.read_u16::<BigEndian>()?;
         
         let pos = reader.position() as usize;
         let payload = raw[pos..].to_vec();
         Ok(Box::new(SpacePacket {
-            primary_header: PrimaryHeader {
-                version,
-                packet_type,
-                sec_header_flag,
-                app_proc_id,
-                sequence_flags,
-                sequence_count,
-                data_length,
-            },
-            secondary_header: SecondaryHeader {
-                // command_id,
-                // destination_port,
-            },
-            //create secondary header here^
+            primary_header,
+            secondary_header,
             payload,
         }))
     }
@@ -168,19 +200,12 @@ impl Packet for SpacePacket {
     fn to_bytes(&self) -> CommsResult<Vec<u8>> {
         let mut bytes = vec![];
 
-        let header_0: u16 = (self.primary_header.app_proc_id) as u16
-            | u16::from(self.primary_header.sec_header_flag) << 11
-            | u16::from(self.primary_header.packet_type) << 12
-            | u16::from(self.primary_header.version) << 13;
+        let primary_header = PrimaryHeader.to_bytes()
+        bytes.write(primary_header)?;
 
-        let header_1 = (self.primary_header.sequence_count as u16)
-            | u16::from(self.primary_header.sequence_flags) << 14;
+        let data_ = PrimaryHeader.to_bytes()
+        bytes.write(primary_header)?;
 
-        let header_2 = self.primary_header.data_length;
-
-        bytes.write_u16::<BigEndian>(header_0)?;
-        bytes.write_u16::<BigEndian>(header_1)?;
-        bytes.write_u16::<BigEndian>(header_2)?;
         //write secondary header here
         // bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
         // bytes.write_u16::<BigEndian>(self.secondary_header.destination_port)?;
