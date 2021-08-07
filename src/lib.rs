@@ -32,21 +32,16 @@ pub trait LinkPacket {
     fn parse(raw: &[u8]) -> CommsResult<Box<Self>>;
     /// Build packet from necessary parts
     fn build(
-        command_id: u64,
-        link_type: u16,
-        destination_port: u16,
+        payload_type: u16,
+        secondary_header: SecondaryHeader,
         payload: &[u8],
     ) -> CommsResult<Box<Self>>;
     /// Create a bytes representation of the packet
     fn to_bytes(&self) -> CommsResult<Vec<u8>>;
-    /// The Command ID of the packet
-    fn command_id(&self) -> u64;
     /// The payload or data of the packet
     fn payload(&self) -> Vec<u8>;
     /// The type of payload contained in the packet
     fn payload_type(&self) -> u16;
-    /// The Destination port of the packet
-    fn destination(&self) -> u16;
     /// Validate the contents of the link packet
     fn validate(&self) -> bool {
         true
@@ -81,10 +76,6 @@ struct PrimaryHeader {
 
 #[derive(Eq, Debug, PartialEq)]
 struct SecondaryHeader {
-    /// Command ID from MT - 64 bits
-    command_id: u64,
-    /// Destination service port - 16 bits
-    destination_port: u16,
 }
 
 /// Structure used to implement SpacePacket version of LinkPacket
@@ -97,9 +88,8 @@ pub struct SpacePacket {
 
 impl LinkPacket for SpacePacket {
     fn build(
-        command_id: u64,
         payload_type: u16,
-        destination_port: u16,
+        secondary_header: SecondaryHeader,
         payload: &[u8],
     ) -> CommsResult<Box<Self>> {
         Ok(Box::new(SpacePacket {
@@ -112,10 +102,7 @@ impl LinkPacket for SpacePacket {
                 sequence_count: 0,
                 data_length: (payload.len() + 10) as u16,
             },
-            secondary_header: SecondaryHeader {
-                command_id,
-                destination_port,
-            },
+            secondary_header: secondary_header,
             payload: payload.to_vec(),
         }))
     }
@@ -134,8 +121,11 @@ impl LinkPacket for SpacePacket {
         let sequence_count = (header_1 & 0x3FFF) as u16;
 
         let data_length = reader.read_u16::<BigEndian>()?;
-        let command_id = reader.read_u64::<BigEndian>()?;
-        let destination_port = reader.read_u16::<BigEndian>()?;
+
+        //parse secondary header information here
+        // let command_id = reader.read_u64::<BigEndian>()?;
+        // let destination_port = reader.read_u16::<BigEndian>()?;
+        
         let pos = reader.position() as usize;
         let payload = raw[pos..].to_vec();
         Ok(Box::new(SpacePacket {
@@ -149,9 +139,10 @@ impl LinkPacket for SpacePacket {
                 data_length,
             },
             secondary_header: SecondaryHeader {
-                command_id,
-                destination_port,
+                // command_id,
+                // destination_port,
             },
+            //create secondary header here^
             payload,
         }))
     }
@@ -172,15 +163,12 @@ impl LinkPacket for SpacePacket {
         bytes.write_u16::<BigEndian>(header_0)?;
         bytes.write_u16::<BigEndian>(header_1)?;
         bytes.write_u16::<BigEndian>(header_2)?;
-        bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
-        bytes.write_u16::<BigEndian>(self.secondary_header.destination_port)?;
+        //write secondary header here
+        // bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
+        // bytes.write_u16::<BigEndian>(self.secondary_header.destination_port)?;
         bytes.append(&mut self.payload.clone());
 
         Ok(bytes)
-    }
-
-    fn command_id(&self) -> u64 {
-        self.secondary_header.command_id
     }
 
     fn payload(&self) -> Vec<u8> {
@@ -189,10 +177,6 @@ impl LinkPacket for SpacePacket {
 
     fn payload_type(&self) -> u16 {
         self.primary_header.app_proc_id
-    }
-
-    fn destination(&self) -> u16 {
-        self.secondary_header.destination_port
     }
 }
 
