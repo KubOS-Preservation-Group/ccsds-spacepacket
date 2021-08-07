@@ -74,8 +74,9 @@ struct PrimaryHeader {
     data_length: u16,
 }
 
+//TODO make this subclassable or something so that projects can define their own custom thing per their own projects spec
 #[derive(Eq, Debug, PartialEq)]
-struct SecondaryHeader {
+pub struct SecondaryHeader {
 }
 
 /// Structure used to implement SpacePacket version of LinkPacket
