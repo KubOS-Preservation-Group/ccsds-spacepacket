@@ -201,10 +201,10 @@ impl Packet for SpacePacket {
         let mut bytes = vec![];
 
         let primary_header = PrimaryHeader.to_bytes()
-        bytes.write(primary_header)?;
+        bytes.append(&mut primary_header.clone());
 
-        let data_ = PrimaryHeader.to_bytes()
-        bytes.write(primary_header)?;
+        let data_field = DataField.to_bytes()
+        bytes.append(&mut data_field.clone());
 
         //write secondary header here
         // bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
