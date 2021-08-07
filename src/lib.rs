@@ -51,6 +51,3 @@ pub struct SpacePacket {
 }
 
 
-pub fn hello() {
-    println!("hello")
-}
