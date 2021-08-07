@@ -60,7 +60,7 @@ pub trait Packet {
 ///DataSegment represents a larger "chunk" of packet data, like a group of header values (such as the PrimaryHeader)
 pub trait DataSegment {
     /// Parse packet from raw bytes
-    fn from_cursor(reader: Cursor) -> Self;
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> Self;
     /// Create a bytes representation of the packet
     fn to_bytes(&self) -> CommsResult<Vec<u8>>;
 }
@@ -84,7 +84,7 @@ struct PrimaryHeader {
 }
 
 impl DataSegment for PrimaryHeader {
-    fn from_cursor(reader: Cursor) -> Self {
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> Self {
     
         let header_0 = reader.read_u16::<BigEndian>()?;
         let version = ((header_0 & 0xE000) >> 13) as u8;
