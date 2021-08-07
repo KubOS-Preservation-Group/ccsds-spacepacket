@@ -43,7 +43,7 @@ pub trait LinkPacket {
     /// The payload or data of the packet
     fn payload(&self) -> Vec<u8>;
     /// The type of payload contained in the packet
-    fn payload_type(&self) -> u16;
+    fn app_proc_id(&self) -> u16;
     /// Validate the contents of the link packet
     fn validate(&self) -> bool {
         true
@@ -193,7 +193,7 @@ impl LinkPacket for SpacePacket {
         self.payload.clone()
     }
 
-    fn payload_type(&self) -> u16 {
+    fn app_proc_id(&self) -> u16 {
         self.primary_header.app_proc_id
     }
 }
