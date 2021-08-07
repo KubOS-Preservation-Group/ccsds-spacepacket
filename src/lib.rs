@@ -34,7 +34,7 @@ pub trait Packet {
     fn parse(raw: &[u8]) -> CommsResult<Box<Self>>;
     /// Build packet from necessary parts
     fn build(
-        payload_type: u16,
+        app_proc_id: u16,
         secondary_header: SecondaryHeader,
         payload: &[u8],
     ) -> CommsResult<Box<Self>>;
