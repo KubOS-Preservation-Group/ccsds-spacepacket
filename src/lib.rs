@@ -143,16 +143,16 @@ impl DataSegment for SpacePacket {
     fn to_bytes(&self) -> CommsResult<Vec<u8>> {
         let mut bytes = vec![];
 
-        let primary_header = PrimaryHeader.to_bytes()
+        let primary_header = self.primary_header.to_bytes()
         bytes.append(&mut primary_header.clone());
 
-        let data_field = PacketDataField.to_bytes()
+        let secondary_header = self.secondary_header.to_bytes()
         bytes.append(&mut data_field.clone());
 
         //write secondary header here
         // bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
         // bytes.write_u16::<BigEndian>(self.secondary_header.destination_port)?;
-        bytes.append(&mut self.data_field.payload.clone());
+        bytes.append(&mut self.payload.clone());
 
         Ok(bytes)
     }
