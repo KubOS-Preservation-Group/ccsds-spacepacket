@@ -119,29 +119,9 @@ pub struct SpacePacket {
     payload: Optional<Vec<u8>>,
 }
 
-impl Packet for SpacePacket {
-    fn build(
-        app_proc_id: u16,
-        secondary_header: SecondaryHeader,
-        payload: &[u8],
-    ) -> CommsResult<Box<Self>> {
-        Ok(Box::new(SpacePacket {
-            primary_header: PrimaryHeader {
-                version: 0,
-                packet_type: 0,
-                sec_header_flag: 0,
-                app_proc_id: app_proc_id,
-                sequence_flags: 0,
-                sequence_count: 0,
-                data_length: (payload.len() + 10) as u16,
-            },
-            secondary_header: secondary_header,
-            payload: payload.to_vec(),
-        }))
-    }
+impl DataSegment for SpacePacket {
 
-    fn parse(raw: &[u8]) -> CommsResult<Box<Self>> {
-        let mut reader = Cursor::new(raw.to_vec());
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> Self {
 
         let primary_header = PrimaryHeader.from_cursor(reader)
 
@@ -174,14 +154,6 @@ impl Packet for SpacePacket {
         bytes.append(&mut self.data_field.payload.clone());
 
         Ok(bytes)
-    }
-
-    fn payload(&self) -> Vec<u8> {
-        self.data_field.payload.clone()
-    }
-
-    fn app_proc_id(&self) -> u16 {
-        self.primary_header.app_proc_id
     }
 }
 
