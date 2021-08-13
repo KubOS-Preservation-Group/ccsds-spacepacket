@@ -29,34 +29,6 @@ pub type CommsResult<T> = Result<T, Error>;
 
 /// Generic Packet trait which defines the internal packet requirements
 /// of the communications service.
-pub trait Packet {
-    /// Parse packet from raw bytes
-    fn parse(raw: &[u8]) -> CommsResult<Box<Self>>;
-    /// Build packet from necessary parts
-    fn build(
-        app_proc_id: u16,
-        secondary_header: SecondaryHeader,
-        payload: &[u8],
-    ) -> CommsResult<Box<Self>>;
-    /// Create a bytes representation of the packet
-    fn to_bytes(&self) -> CommsResult<Vec<u8>>;
-    /// The payload or data of the packet
-    fn payload(&self) -> Vec<u8>;
-    /// The type of payload contained in the packet
-    fn app_proc_id(&self) -> u16;
-    /// Validate the contents of the link packet
-    fn validate(&self) -> bool {
-        true
-    }
-    /// The maximum allowed size of the packet
-    /// We are still assuming that at some point these packets
-    /// will be sent over IP/UDP
-    fn max_size() -> usize {
-        // (65,535 - 20 byte IP header - 8 byte UDP header)
-        65507
-    }
-}
-
 ///DataSegment represents a larger "chunk" of packet data, like a group of header values (such as the PrimaryHeader)
 pub trait DataSegment {
     /// Parse packet from raw bytes
