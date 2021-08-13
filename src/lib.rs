@@ -134,28 +134,13 @@ impl DataSegment for PrimaryHeader {
 pub struct SecondaryHeader {
 }
 
-///PacketDataField comes from the Space Packet Protocol spec and contains the secondary header and a user defined payload.
-pub struct PacketDataField {
-    secondary_header: SecondaryHeader,
-    payload: Vec<u8>,
-}
-
-/// Structure used to implement SpacePacket version of Packet
+/// Structure used to implement SpacePacket
 #[derive(Eq, Debug, PartialEq)]
 pub struct SpacePacket {
     primary_header: PrimaryHeader,
-    data_field: PacketDataField,
-}
-
-impl PacketDataField {
-
-    fn has_secondary_header(&self) -> bool {
-
-    }
-
-    fn length(&self) -> {
-        mem::size_of<self.secondary_header>() + self.data_field.payload.len()
-    }
+    //at least one of these two optionals must exist
+    secondary_header: Optional<SecondaryHeader>,
+    payload: Optional<Vec<u8>>,
 }
 
 impl Packet for SpacePacket {
