@@ -23,6 +23,9 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
 
 
+#[macro_use]
+extern crate derive_builder;
+
 /// Result returned by the `comms-service`.
 pub type CommsResult<T> = Result<T, Error>;
 
@@ -108,6 +111,7 @@ pub struct SecondaryHeader {
 
 /// Structure used to implement SpacePacket
 #[derive(Eq, Debug, PartialEq)]
+#[derive(Builder)]
 pub struct SpacePacket {
     primary_header: PrimaryHeader,
     //at least one of these two optionals must exist
