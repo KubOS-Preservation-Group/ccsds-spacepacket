@@ -171,7 +171,9 @@ mod tests {
         let raw = packet.to_bytes();
         println!("bytes {:?}", raw);
 
-        let parsed = SpacePacket::parse(&raw.unwrap());
+        let mut reader = Cursor::new(raw.to_vec());
+
+        let parsed = SpacePacket::from_cursor(reader);
         println!("parsed {:?}", parsed);
 
         assert_eq!(packet, parsed.unwrap());
@@ -180,7 +182,9 @@ mod tests {
     #[test]
     fn parse_python_spacepacket() {
         let raw = b"\x00\x01\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00o\x05\xdcquery";
-        let parsed = SpacePacket::parse(raw).unwrap();
+        let mut reader = Cursor::new(raw.to_vec());
+
+        let parsed = SpacePacket::from_cursor(reader);
         dbg!(parsed);
     }
 }
