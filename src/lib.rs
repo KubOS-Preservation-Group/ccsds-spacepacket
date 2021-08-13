@@ -124,12 +124,13 @@ impl DataSegment for SpacePacket {
     fn from_cursor(reader: Cursor<Vec<u8>>) -> Self {
 
         let primary_header = PrimaryHeader.from_cursor(reader)
+        let secondary_header;
 
-        //parse secondary header information here
-        let secondary_header = SecondaryHeader.from_cursor(reader)
-        // let command_id = reader.read_u64::<BigEndian>()?;
-        // let destination_port = reader.read_u16::<BigEndian>()?;
-        
+        if (primary_header.sec_header_flag == 1){
+            //parse secondary header information here
+            secondary_header = SecondaryHeader.from_cursor(reader)
+        }
+    
         let pos = reader.position() as usize;
         let payload = raw[pos..].to_vec();
         Ok(Box::new(SpacePacket {
