@@ -38,6 +38,8 @@ pub trait DataSegment {
     fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self>;
     /// Create a bytes representation of the packet
     fn to_bytes(&self) -> CommsResult<Vec<u8>>;
+    ///the number of octets
+    fn length(&self) -> u16;
 }
 
 #[derive(Eq, Debug, PartialEq)]
@@ -102,6 +104,11 @@ impl DataSegment for PrimaryHeader {
         bytes.write_u16::<BigEndian>(header_2)?;
         Ok(bytes)
     }
+    fn length(&self) -> u16 {
+        //3+1+1+11+2+14+16 bits for the primary header
+        //totals to 3 bytes aka octets
+        3
+    }
 }
 
 //TODO make this subclassable or something so that projects can define their own custom thing per their own projects spec
@@ -157,6 +164,10 @@ impl DataSegment for SpacePacket {
         bytes.append(&mut self.payload.clone());
 
         Ok(bytes)
+    }
+
+    fn length(&self) -> u16 {
+        self.primary_header.length() + self.primary_header.data_length - 1
     }
 }
 
