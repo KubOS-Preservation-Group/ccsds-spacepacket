@@ -35,7 +35,7 @@ pub type CommsResult<T> = Result<T, Error>;
 ///DataSegment represents a larger "chunk" of packet data, like a group of header values (such as the PrimaryHeader)
 pub trait DataSegment {
     /// Parse packet from raw bytes
-    fn from_cursor(reader: Cursor<Vec<u8>>) -> Self;
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self>;
     /// Create a bytes representation of the packet
     fn to_bytes(&self) -> CommsResult<Vec<u8>>;
 }
@@ -59,8 +59,8 @@ struct PrimaryHeader {
 }
 
 impl DataSegment for PrimaryHeader {
-    fn from_cursor(reader: Cursor<Vec<u8>>) -> Self {
-    
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> {
+
         let header_0 = reader.read_u16::<BigEndian>()?;
         let version = ((header_0 & 0xE000) >> 13) as u8;
         let packet_type = ((header_0 & 0x1000) >> 12) as u8;
@@ -73,7 +73,7 @@ impl DataSegment for PrimaryHeader {
 
         let data_length = reader.read_u16::<BigEndian>()?;
 
-        PrimaryHeader {
+        Ok(PrimaryHeader {
             version,
             packet_type,
             sec_header_flag,
@@ -81,7 +81,7 @@ impl DataSegment for PrimaryHeader {
             sequence_flags,
             sequence_count,
             data_length,
-        }
+        })
     }
 
     fn to_bytes(&self) -> CommsResult<Vec<u8>> {
@@ -121,7 +121,7 @@ pub struct SpacePacket {
 
 impl DataSegment for SpacePacket {
 
-    fn from_cursor(reader: Cursor<Vec<u8>>) -> Self {
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> {
 
         let primary_header = PrimaryHeader.from_cursor(reader)
         let secondary_header;
@@ -133,11 +133,11 @@ impl DataSegment for SpacePacket {
     
         let pos = reader.position() as usize;
         let payload = raw[pos..].to_vec();
-        Ok(Box::new(SpacePacket {
+        Ok(SpacePacket {
             primary_header,
             secondary_header,
             payload,
-        }))
+        })//Ok(Box::new(
     }
 
     fn to_bytes(&self) -> CommsResult<Vec<u8>> {
