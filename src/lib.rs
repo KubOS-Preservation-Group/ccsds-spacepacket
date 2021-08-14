@@ -146,8 +146,10 @@ impl DataSegment for SpacePacket {
         let primary_header = self.primary_header.to_bytes()
         bytes.append(&mut primary_header.clone());
 
-        let secondary_header = self.secondary_header.to_bytes()
-        bytes.append(&mut data_field.clone());
+        if (primary_header.sec_header_flag == 1){
+            let secondary_header = self.secondary_header.to_bytes()
+            bytes.append(&mut secondary_header);//.clone()
+        }
 
         //write secondary header here
         // bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
