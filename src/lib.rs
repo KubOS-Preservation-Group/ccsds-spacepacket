@@ -122,8 +122,8 @@ pub struct SecondaryHeader {
 pub struct SpacePacket {
     primary_header: PrimaryHeader,
     //at least one of these two optionals must exist
-    secondary_header: Optional<SecondaryHeader>,
-    payload: Optional<Vec<u8>>,
+    secondary_header: Option<SecondaryHeader>,
+    payload: Option<Vec<u8>>,
 }
 
 impl DataSegment for SpacePacket {
