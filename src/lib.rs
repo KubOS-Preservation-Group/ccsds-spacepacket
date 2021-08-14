@@ -126,7 +126,7 @@ impl DataSegment for SpacePacket {
         let primary_header = PrimaryHeader.from_cursor(reader)
         let secondary_header;
 
-        if (primary_header.sec_header_flag == 1){
+        if primary_header.sec_header_flag == 1 {
             //parse secondary header information here
             secondary_header = SecondaryHeader.from_cursor(reader)
         }
@@ -146,7 +146,7 @@ impl DataSegment for SpacePacket {
         let primary_header = self.primary_header.to_bytes()
         bytes.append(&mut primary_header.clone());
 
-        if (primary_header.sec_header_flag == 1){
+        if self.primary_header.sec_header_flag == 1 {
             let secondary_header = self.secondary_header.to_bytes()
             bytes.append(&mut secondary_header);//.clone()
         }
