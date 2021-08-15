@@ -242,9 +242,9 @@ impl<D: DataSegment> SpacePacketBuilder<D> {
 
         let payload_present = self.payload != None;
 
-        let has_data = sec_header_present || payload_present;
-
-        has_data.ok_or("a secondary header and/or payload is required");
+        if !(sec_header_present || payload_present) {
+            return Err("a secondary header and/or payload is required".to_string())
+        }
 
         Ok(SpacePacket {
             primary_header: Clone::clone(self.primary_header
