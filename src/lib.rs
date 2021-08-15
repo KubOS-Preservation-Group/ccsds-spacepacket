@@ -164,10 +164,10 @@ impl <D: DataSegment> for SpacePacket<D> {
 
 #[derive(Clone, Default)]
 struct SpacePacketBuilder<D> {
-    primary_header: Optional<PrimaryHeader>,
+    primary_header: Option<PrimaryHeader>,
     //at least one of these two optionals must exist
-    secondary_header: Optional<D>,
-    payload: Optional<Vec<u8>>,
+    secondary_header: Option<D>,
+    payload: Option<Vec<u8>>,
 }
 
 #[allow(dead_code)]
