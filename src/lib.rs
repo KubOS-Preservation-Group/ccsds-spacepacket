@@ -228,10 +228,12 @@ impl<D: DataSegment> SpacePacketBuilder<D> {
 
     pub fn with_payload(&mut self, payload: Vec<u8>) -> &'static mut Self {
         // we are replacing the default payload so subtract its length
-        self.primary_header.data_length -= self.payload.len();
-        self.payload = payload;
+        // this assumes that the length is less than the 16 bit maximum because the CCSDS spec limits the packet size
+        self.primary_header.data_length -= self.payload.len() as u16;
+        self.payload = Some(payload);
         // add the length of the new payload to the total
-        self.primary_header.data_length += self.payload.len();
+        // this assumes that the length is less than the 16 bit maximum because the CCSDS spec limits the packet size
+        self.primary_header.data_length += self.payload.len() as u16;
 
         self
     }
