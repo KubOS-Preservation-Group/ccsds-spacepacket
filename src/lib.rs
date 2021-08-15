@@ -106,6 +106,26 @@ impl DataSegment for PrimaryHeader {
     }
 }
 
+#[derive(Eq, Debug, PartialEq)]
+#[derive(Clone)]
+struct EmptySecondaryHeader {
+    
+}
+
+impl DataSegment for EmptySecondaryHeader {
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> where Self: std::marker::Sized {
+
+        Ok(EmptySecondaryHeader {})
+    }
+
+    fn to_bytes(&self) -> CommsResult<Vec<u8>> {
+        Ok(vec![])
+    }
+    fn length(&self) -> u16 {
+        0
+    }
+}
+
 /// Structure used to implement SpacePacket
 #[derive(Eq, Debug, PartialEq)]
 pub struct SpacePacket<D> {
