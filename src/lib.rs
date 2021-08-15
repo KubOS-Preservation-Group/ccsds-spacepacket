@@ -121,7 +121,7 @@ impl <D: DataSegment> for SpacePacket<D> {
 
     fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> {
 
-        let primary_header = PrimaryHeader.from_cursor(reader)
+        let primary_header = PrimaryHeader::from_cursor(reader)
         let secondary_header;
 
         if primary_header.sec_header_flag == 1 {
@@ -185,48 +185,48 @@ impl SpacePacketBuilder <D: DataSegment> {
             },
             sec_header: None,
             payload: &[0]
-        }
+        };
         &mut new
     }
 
     pub fn with_primary_header(&mut self, packet_type: u8, app_proc_id: u16, sequence_flags: u8, packet_name: u16, data_length: u16 = 1) -> &mut Self {
-        self.primary_header.packet_type = packet_type
-        self.primary_header.app_proc_id = app_proc_id
-        self.primary_header.sequence_flags = sequence_flags
-        self.primary_header.sequence_count = packet_name
-        self.primary_header.data_length = data_length
+        self.primary_header.packet_type = packet_type;
+        self.primary_header.app_proc_id = app_proc_id;
+        self.primary_header.sequence_flags = sequence_flags;
+        self.primary_header.sequence_count = packet_name;
+        self.primary_header.data_length = data_length;
 
         self
     }
 
 
     pub fn with_secondary_header<D: DataSegment>(&mut self, sec_header: D) -> &mut Self {
-        self.primary_header.sec_header_flag = 1
-        self.secondary_header = sec_header
-        self.primary_header.data_length += secondary_header.length()
+        self.primary_header.sec_header_flag = 1;
+        self.secondary_header = sec_header;
+        self.primary_header.data_length += secondary_header.length();
 
         self
     }
 
     pub fn with_payload(&mut self, payload: Vec<u8>) -> &mut Self {
         // we are replacing the default payload so subtract its length
-        self.primary_header.data_length -= self.payload.len()
-        self.payload = payload
+        self.primary_header.data_length -= self.payload.len();
+        self.payload = payload;
         // add the length of the new payload to the total
-        self.primary_header.data_length += self.payload.len()
+        self.primary_header.data_length += self.payload.len();
 
         self
     }
 
     fn build(&self) -> Result<SpacePacket, String> {
 
-        let sec_header_present = self.secondary_header != None && self.primary_header.sec_header_flag == 1
+        let sec_header_present = self.secondary_header != None && self.primary_header.sec_header_flag == 1;
 
-        let payload_present = self.payload != None
+        let payload_present = self.payload != None;
 
-        let has_data = sec_header_present || payload_present
+        let has_data = sec_header_present || payload_present;
 
-        has_data.ok_or("a secondary header and/or payload is required")
+        has_data.ok_or("a secondary header and/or payload is required");
 
         Ok(SpacePacket {
             primary_header: Clone::clone(self.primary_header
@@ -234,7 +234,7 @@ impl SpacePacketBuilder <D: DataSegment> {
                 .ok_or("primary header must be initialized")?),
             secondary_header: Clone::clone(self.secondary_header),
             payload: Clone::clone(self.payload)
-        })
+        });
     }
 }
 
