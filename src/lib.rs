@@ -117,7 +117,7 @@ pub struct SpacePacket<D> {
     payload: Option<Vec<u8>>,
 }
 
-impl <D: DataSegment> for SpacePacket<D> {
+impl<D: DataSegment> SpacePacket<D> {
 
     fn from_bytes(raw: &[u8]) -> CommsResult<Self> {
 
@@ -174,7 +174,7 @@ struct SpacePacketBuilder<D> {
 }
 
 #[allow(dead_code)]
-impl SpacePacketBuilder <D: DataSegment> {
+impl<D: DataSegment> SpacePacketBuilder<D> {
     pub fn default() -> &'static mut Self {
         let mut new = SpacePacketBuilder{
             primary_header: PrimaryHeader{
@@ -203,7 +203,7 @@ impl SpacePacketBuilder <D: DataSegment> {
     }
 
 
-    pub fn with_secondary_header<D: DataSegment>(&mut self, sec_header: D) -> &'static mut Self {
+    pub fn with_secondary_header(&mut self, sec_header: D) -> &'static mut Self {
         self.primary_header.sec_header_flag = 1;
         self.secondary_header = sec_header;
         self.primary_header.data_length += self.secondary_header.length();
@@ -221,7 +221,7 @@ impl SpacePacketBuilder <D: DataSegment> {
         self
     }
 
-    fn build(&self) -> Result<SpacePacket, String> {
+    fn build(&self) -> Result<SpacePacket<D>, String> {
 
         let sec_header_present = self.secondary_header != None && self.primary_header.sec_header_flag == 1;
 
