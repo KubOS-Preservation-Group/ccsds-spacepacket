@@ -119,7 +119,10 @@ pub struct SpacePacket<D> {
 
 impl <D: DataSegment> for SpacePacket<D> {
 
-    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> {
+    fn from_bytes(raw: &[u8]) -> CommsResult<Self> {
+
+        let mut reader = Cursor::new(raw.to_vec());
+
 
         let primary_header = PrimaryHeader::from_cursor(reader);
         let secondary_header;
