@@ -110,14 +110,14 @@ impl DataSegment for PrimaryHeader {
 
 /// Structure used to implement SpacePacket
 #[derive(Eq, Debug, PartialEq)]
-pub struct SpacePacket {
+pub struct SpacePacket<D> {
     primary_header: PrimaryHeader,
     //at least one of these two optionals must exist
-    secondary_header: Option<SecondaryHeader>,
+    secondary_header: Option<D>,
     payload: Option<Vec<u8>>,
 }
 
-impl DataSegment for SpacePacket {
+impl <D: DataSegment> for SpacePacket<D> {
 
     fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> {
 
