@@ -172,7 +172,7 @@ struct SpacePacketBuilder<D> {
 
 #[allow(dead_code)]
 impl SpacePacketBuilder <D: DataSegment> {
-    pub fn default() -> &mut Self {
+    pub fn default() -> &'static mut Self {
         let mut new = SpacePacketBuilder{
             primary_header: PrimaryHeader{
                 version: 0,
@@ -189,7 +189,7 @@ impl SpacePacketBuilder <D: DataSegment> {
         &mut new
     }
 
-    pub fn with_primary_header(&mut self, packet_type: u8, app_proc_id: u16, sequence_flags: u8, packet_name: u16, data_length: u16 = 1) -> &mut Self {
+    pub fn with_primary_header(&mut self, packet_type: u8, app_proc_id: u16, sequence_flags: u8, packet_name: u16, data_length: u16 = 1) -> &'static mut Self {
         self.primary_header.packet_type = packet_type;
         self.primary_header.app_proc_id = app_proc_id;
         self.primary_header.sequence_flags = sequence_flags;
@@ -200,7 +200,7 @@ impl SpacePacketBuilder <D: DataSegment> {
     }
 
 
-    pub fn with_secondary_header<D: DataSegment>(&mut self, sec_header: D) -> &mut Self {
+    pub fn with_secondary_header<D: DataSegment>(&mut self, sec_header: D) -> &'static mut Self {
         self.primary_header.sec_header_flag = 1;
         self.secondary_header = sec_header;
         self.primary_header.data_length += secondary_header.length();
@@ -208,7 +208,7 @@ impl SpacePacketBuilder <D: DataSegment> {
         self
     }
 
-    pub fn with_payload(&mut self, payload: Vec<u8>) -> &mut Self {
+    pub fn with_payload(&mut self, payload: Vec<u8>) -> &'static mut Self {
         // we are replacing the default payload so subtract its length
         self.primary_header.data_length -= self.payload.len();
         self.payload = payload;
