@@ -37,6 +37,7 @@ pub trait DataSegment {
 }
 
 #[derive(Eq, Debug, PartialEq)]
+#[derive(Clone)]
 struct PrimaryHeader {
     /// Packet Version Number - 3 bits
     version: u8,
