@@ -26,10 +26,7 @@ use std::io::Cursor;
 /// Result returned by the `comms-service`.
 pub type CommsResult<T> = Result<T, Error>;
 
-
-/// Generic Packet trait which defines the internal packet requirements
-/// of the communications service.
-///DataSegment represents a larger "chunk" of packet data, like a group of header values (such as the PrimaryHeader)
+///DataSegment represents a larger "chunk" of packet data, like a group of header values (such as the PrimaryHeader) and defines methods for reading and writing from bytes.
 pub trait DataSegment {
     /// Parse packet from raw bytes
     fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self>;
@@ -152,9 +149,6 @@ impl<D: DataSegment> SpacePacket<D> {
             bytes.append(&mut secondary_header);//.clone()
         }
 
-        //write secondary header here
-        // bytes.write_u64::<BigEndian>(self.secondary_header.command_id)?;
-        // bytes.write_u16::<BigEndian>(self.secondary_header.destination_port)?;
         bytes.append(&mut self.payload.clone());
 
         Ok(bytes)
