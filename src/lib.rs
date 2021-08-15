@@ -264,13 +264,13 @@ mod tests {
     #[test]
     fn do_build_parse() {
         let packet =
-            SpacePacket::build(1294, 0, 15001, &[5, 4, 3, 2, 1]).unwrap();
+            SpacePacket<EmptySecondaryHeader>::build(1294, 0, 15001, &[5, 4, 3, 2, 1]).unwrap();
         println!("packet {:?}", packet);
 
         let raw = packet.to_bytes();
         println!("bytes {:?}", raw);
 
-        let parsed = SpacePacket::from_bytes(raw);
+        let parsed = SpacePacket<EmptySecondaryHeader>::from_bytes(raw);
         println!("parsed {:?}", parsed);
 
         assert_eq!(packet, parsed.unwrap());
@@ -280,7 +280,7 @@ mod tests {
     fn parse_python_spacepacket() {
         let raw = b"\x00\x01\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00o\x05\xdcquery";
     
-        let parsed = SpacePacket::from_bytes(raw);
+        let parsed = SpacePacket<EmptySecondaryHeader>::from_bytes(raw);
         dbg!(parsed);
     }
 }
