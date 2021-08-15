@@ -29,7 +29,7 @@ pub type CommsResult<T> = Result<T, Error>;
 ///DataSegment represents a larger "chunk" of packet data, like a group of header values (such as the PrimaryHeader) and defines methods for reading and writing from bytes.
 pub trait DataSegment {
     /// Parse packet from raw bytes
-    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self>;
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self>  where Self: std::marker::Sized;
     /// Create a bytes representation of the packet
     fn to_bytes(&self) -> CommsResult<Vec<u8>>;
     ///the number of octets
@@ -55,7 +55,7 @@ struct PrimaryHeader {
 }
 
 impl DataSegment for PrimaryHeader {
-    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> {
+    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> where Self: std::marker::Sized {
 
         let header_0 = reader.read_u16::<BigEndian>()?;
         let version = ((header_0 & 0xE000) >> 13) as u8;
@@ -116,7 +116,7 @@ pub struct SpacePacket<D> {
 
 impl<D: DataSegment> SpacePacket<D> {
 
-    fn from_bytes(raw: &[u8]) -> CommsResult<Self> {
+    fn from_bytes(raw: &[u8]) -> CommsResult<Self> where Self: std::marker::Sized {
 
         let mut reader = Cursor::new(raw.to_vec());
 
