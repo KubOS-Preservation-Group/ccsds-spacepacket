@@ -106,8 +106,8 @@ impl DataSegment for PrimaryHeader {
     }
     fn length(&self) -> u16 {
         //3+1+1+11+2+14+16 bits for the primary header
-        //totals to 3 bytes aka octets
-        3
+        //totals to 6 octets
+        6
     }
 }
 
