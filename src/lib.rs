@@ -18,7 +18,7 @@
 
 //! Packet Definition for SpacePacket
 
-use failure::{Error, Fail};
+use failure::{Error};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
 
@@ -121,12 +121,12 @@ impl <D: DataSegment> for SpacePacket<D> {
 
     fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> {
 
-        let primary_header = PrimaryHeader::from_cursor(reader)
+        let primary_header = PrimaryHeader::from_cursor(reader);
         let secondary_header;
 
         if primary_header.sec_header_flag == 1 {
             //parse secondary header information here
-            secondary_header = SecondaryHeader.from_cursor(reader)
+            secondary_header = D::from_cursor(reader);
         }
     
         let pos = reader.position() as usize;
@@ -141,11 +141,11 @@ impl <D: DataSegment> for SpacePacket<D> {
     fn to_bytes(&self) -> CommsResult<Vec<u8>> {
         let mut bytes = vec![];
 
-        let primary_header = self.primary_header.to_bytes()
-        bytes.append(&mut primary_header.clone());
+        let primary_header = self.primary_header.to_bytes();
+        bytes.append(&mut primary_header);
 
         if self.primary_header.sec_header_flag == 1 {
-            let secondary_header = self.secondary_header.to_bytes()
+            let secondary_header = self.secondary_header.to_bytes();
             bytes.append(&mut secondary_header);//.clone()
         }
 
@@ -189,7 +189,7 @@ impl SpacePacketBuilder <D: DataSegment> {
         &mut new
     }
 
-    pub fn with_primary_header(&mut self, packet_type: u8, app_proc_id: u16, sequence_flags: u8, packet_name: u16, data_length: u16 = 1) -> &'static mut Self {
+    pub fn with_primary_header(&mut self, packet_type: u8, app_proc_id: u16, sequence_flags: u8, packet_name: u16, data_length: u16) -> &'static mut Self {
         self.primary_header.packet_type = packet_type;
         self.primary_header.app_proc_id = app_proc_id;
         self.primary_header.sequence_flags = sequence_flags;
@@ -203,7 +203,7 @@ impl SpacePacketBuilder <D: DataSegment> {
     pub fn with_secondary_header<D: DataSegment>(&mut self, sec_header: D) -> &'static mut Self {
         self.primary_header.sec_header_flag = 1;
         self.secondary_header = sec_header;
-        self.primary_header.data_length += secondary_header.length();
+        self.primary_header.data_length += self.secondary_header.length();
 
         self
     }
