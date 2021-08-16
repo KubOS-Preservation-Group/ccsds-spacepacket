@@ -37,7 +37,7 @@ pub trait DataSegment {
 }
 
 #[derive(Eq, Debug, PartialEq)]
-#[derive(Clone)]
+#[derive(Clone, Default)]
 struct PrimaryHeader {
     /// Packet Version Number - 3 bits
     version: u8,
@@ -56,7 +56,7 @@ struct PrimaryHeader {
 }
 
 impl DataSegment for PrimaryHeader {
-    fn from_cursor(reader: Cursor<Vec<u8>>) -> CommsResult<Self> where Self: std::marker::Sized {
+    fn from_cursor(mut reader: Cursor<Vec<u8>>) -> CommsResult<Self> where Self: std::marker::Sized {
 
         let header_0 = reader.read_u16::<BigEndian>()?;
         let version = ((header_0 & 0xE000) >> 13) as u8;
@@ -142,12 +142,12 @@ impl<D: DataSegment> SpacePacket<D> {
         let mut reader = Cursor::new(raw.to_vec());
 
 
-        let primary_header = PrimaryHeader::from_cursor(reader);
-        let secondary_header;
+        let primary_header = PrimaryHeader::from_cursor(reader.clone())?;
+        let mut secondary_header = None;
 
         if primary_header.sec_header_flag == 1 {
             //parse secondary header information here
-            secondary_header = D::from_cursor(reader);
+            secondary_header = Some(D::from_cursor(reader.clone())?);
         }
     
         let pos = reader.position() as usize;
@@ -155,22 +155,24 @@ impl<D: DataSegment> SpacePacket<D> {
         Ok(SpacePacket {
             primary_header,
             secondary_header,
-            payload,
+            payload: Some(payload),
         })//Ok(Box::new(
     }
 
     fn to_bytes(&self) -> CommsResult<Vec<u8>> {
         let mut bytes = vec![];
 
-        let primary_header = self.primary_header.to_bytes();
+        let mut primary_header = self.primary_header.to_bytes()?;
         bytes.append(&mut primary_header);
 
         if self.primary_header.sec_header_flag == 1 {
-            let secondary_header = self.secondary_header.to_bytes();
-            bytes.append(&mut secondary_header);//.clone()
+            if let Some(sec_h) = &self.secondary_header {
+                bytes.append(&mut sec_h.to_bytes()?);//.clone()
+            }
         }
-
-        bytes.append(&mut self.payload.clone());
+        if let Some(payload) = &self.payload {
+            bytes.append(&mut payload.clone());
+        }
 
         Ok(bytes)
     }
@@ -182,15 +184,15 @@ impl<D: DataSegment> SpacePacket<D> {
 
 #[derive(Clone, Default)]
 struct SpacePacketBuilder<D> {
-    primary_header: Option<PrimaryHeader>,
+    primary_header: PrimaryHeader,
     //at least one of these two optionals must exist
     secondary_header: Option<D>,
     payload: Option<Vec<u8>>,
 }
 
 #[allow(dead_code)]
-impl<D: DataSegment> SpacePacketBuilder<D> {
-    pub fn default() -> &'static mut Self {
+impl<D: DataSegment + std::clone::Clone> SpacePacketBuilder<D> {
+    pub fn default() -> &'static mut SpacePacketBuilder<D> {
         let mut new = SpacePacketBuilder{
             primary_header: PrimaryHeader{
                 version: 0,
@@ -201,13 +203,13 @@ impl<D: DataSegment> SpacePacketBuilder<D> {
                 sequence_count: 0,
                 data_length: 1
             },
-            sec_header: None,
-            payload: &[0]
+            secondary_header: None,
+            payload: Some((&[0]).to_vec())
         };
-        &mut new
+        &mut new.to_owned()
     }
 
-    pub fn with_primary_header(&mut self, packet_type: u8, app_proc_id: u16, sequence_flags: u8, packet_name: u16, data_length: u16) -> &'static mut Self {
+    pub fn with_primary_header(&mut self, packet_type: u8, app_proc_id: u16, sequence_flags: u8, packet_name: u16, data_length: u16) -> &mut Self {
         self.primary_header.packet_type = packet_type;
         self.primary_header.app_proc_id = app_proc_id;
         self.primary_header.sequence_flags = sequence_flags;
@@ -218,43 +220,43 @@ impl<D: DataSegment> SpacePacketBuilder<D> {
     }
 
 
-    pub fn with_secondary_header(&mut self, sec_header: D) -> &'static mut Self {
+    pub fn with_secondary_header(&mut self, sec_header: D) -> &mut Self {
         self.primary_header.sec_header_flag = 1;
-        self.secondary_header = sec_header;
-        self.primary_header.data_length += self.secondary_header.length();
+        self.secondary_header = Some(sec_header.clone());
+        self.primary_header.data_length += sec_header.length();
 
         self
     }
 
-    pub fn with_payload(&mut self, payload: Vec<u8>) -> &'static mut Self {
+    pub fn with_payload(&mut self, payload: Vec<u8>) -> CommsResult<&mut Self> {
         // we are replacing the default payload so subtract its length
         // this assumes that the length is less than the 16 bit maximum because the CCSDS spec limits the packet size
-        self.primary_header.data_length -= self.payload.len() as u16;
-        self.payload = Some(payload);
+        if let Some(pl) = &self.payload {
+            self.primary_header.data_length -= pl.len() as u16;
+        }
+        self.payload = Some(payload.clone());
         // add the length of the new payload to the total
         // this assumes that the length is less than the 16 bit maximum because the CCSDS spec limits the packet size
-        self.primary_header.data_length += self.payload.len() as u16;
+        self.primary_header.data_length += payload.len() as u16;
 
-        self
+        Ok(self)
     }
 
     fn build(&self) -> Result<SpacePacket<D>, String> {
 
-        let sec_header_present = self.secondary_header != None && self.primary_header.sec_header_flag == 1;
+        let sec_header_present = self.secondary_header.is_some() && self.primary_header.sec_header_flag == 1;
 
-        let payload_present = self.payload != None;
+        let payload_present = self.payload.is_some();
 
         if !(sec_header_present || payload_present) {
             return Err("a secondary header and/or payload is required".to_string())
         }
 
         Ok(SpacePacket {
-            primary_header: Clone::clone(self.primary_header
-                .as_ref()
-                .ok_or("primary header must be initialized")?),
-            secondary_header: Clone::clone(self.secondary_header),
-            payload: Clone::clone(self.payload)
-        });
+            primary_header: Clone::clone(&self.primary_header),
+            secondary_header: Clone::clone(&self.secondary_header),
+            payload: Clone::clone(&self.payload)
+        })
     }
 }
 
@@ -266,13 +268,13 @@ mod tests {
     #[test]
     fn do_build_parse() {
         let packet =
-            SpacePacket<EmptySecondaryHeader>::build(1294, 0, 15001, &[5, 4, 3, 2, 1]).unwrap();
+            SpacePacket::<EmptySecondaryHeader>::build(1294, 0, 15001, &[5, 4, 3, 2, 1]).unwrap();
         println!("packet {:?}", packet);
 
         let raw = packet.to_bytes();
         println!("bytes {:?}", raw);
 
-        let parsed = SpacePacket<EmptySecondaryHeader>::from_bytes(raw);
+        let parsed = SpacePacket::<EmptySecondaryHeader>::from_bytes(raw);
         println!("parsed {:?}", parsed);
 
         assert_eq!(packet, parsed.unwrap());
@@ -282,7 +284,7 @@ mod tests {
     fn parse_python_spacepacket() {
         let raw = b"\x00\x01\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00o\x05\xdcquery";
     
-        let parsed = SpacePacket<EmptySecondaryHeader>::from_bytes(raw);
+        let parsed = SpacePacket::<EmptySecondaryHeader>::from_bytes(raw);
         dbg!(parsed);
     }
 }
