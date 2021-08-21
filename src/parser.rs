@@ -22,38 +22,23 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-fn version(input: &[u8]) -> IResult<&[u8],u8> {
-    bits!( take_bits!(3)(input) )
-}
+named!(version<&[u8], u8>, bits!( take_bits!(3)(input) ))
 
-fn packet_type(input: &[u8]) -> IResult<&[u8],u8> {
-    bits!( take_bits!(1)(input) )
-}
+named!(packet_type<&[u8], u8>, bits!( take_bits!(1)(input) ))
 
-fn sec_header_flag(input: &[u8]) -> IResult<&[u8],u8> {
-    bits!( take_bits!(1)(input) )
-}
+named!(sec_header_flag<&[u8], u8>, bits!( take_bits!(1)(input) ))
 
+named!(app_proc_id<&[u8], u16>, bits!( take_bits!(11)(input) ))
 
-fn app_proc_id(input: &[u8]) -> IResult<&[u8],u16> {
-    bits!( take_bits!(11)(input) )
-}
+named!(sequence_flags<&[u8], u8>, bits!( take_bits!(2)(input) ))
 
-fn sequence_flags(input: &[u8]) -> IResult<&[u8],u8> {
-    bits!( take_bits!(2)(input) )
-}
+named!(sequence_count<&[u16], u8>, bits!( take_bits!(14)(input) ))
 
-fn sequence_count(input: &[u8]) -> IResult<&[u8],u16> {
-    bits!( take_bits!(14)(input) )
-}
+named!(data_length<&[u8], u16>, be_u16(input))
 
-fn data_length(input: &[u8]) -> IResult<&[u8],u16> {
-    be_u16(input)
-}
+// named!(data_length = |s| {be_u16(s)};
 
-// fn data_length = |s| {be_u16(s)};
-
-fn primary_header(i: &[u8]) -> IResult<&[u8], PrimaryHeader> {
+named!(primary_header(i: &[u8]) -> IResult<&[u8], PrimaryHeader>, {
 
   // tuple takes as argument a tuple of parsers and will return
   // a tuple of their results
@@ -61,7 +46,7 @@ fn primary_header(i: &[u8]) -> IResult<&[u8], PrimaryHeader> {
     tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length))(i)?;
 
   Ok((input, PrimaryHeader { version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length }))
-}
+})
 
 #[cfg(test)]
 mod tests {
