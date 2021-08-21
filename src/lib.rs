@@ -17,6 +17,9 @@
 //  - Adrian Edwards
 
 //! Packet Definition for SpacePacket
+#[macro_use]
+extern crate nom;
+pub mod parser;
 
 use failure::{Error};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
