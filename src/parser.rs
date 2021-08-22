@@ -38,15 +38,22 @@ named!(data_length<&[u8], u16>, be_u16(input))
 
 // named!(data_length = |s| {be_u16(s)};
 
-named!(primary_header(i: &[u8]) -> IResult<&[u8], PrimaryHeader>, {
+named!(primary_header_parser<&[u8], (version:u8, packet_type:u8, sec_header_flag:u8, app_proc_id:u16, sequence_flags:u8, sequence_count:u8, data_length:u16)>, tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)));
 
-  // tuple takes as argument a tuple of parsers and will return
-  // a tuple of their results
-  let (input, (version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)) =
-    tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length))(i)?;
+pub named!(pub primary_header<&[u8], PrimaryHeader>, map(primary_header_parser, |t: (input, (version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length))| {
+	Ok(
+		input, PrimaryHeader {
+			version,
+			packet_type,
+            sec_header_flag,
+            app_proc_id,
+            sequence_flags,
+            sequence_count,
+            data_length
+        }
+    )	
+})); 
 
-  Ok((input, PrimaryHeader { version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length }))
-})
 
 #[cfg(test)]
 mod tests {
