@@ -24,15 +24,15 @@ pub struct PrimaryHeader {
 
 named!(version<&[u8], u8>, bits!(take_bits!(3u8)) );
 
-named!(packet_type<(&[u8], usize), u8>, take_bits!(1u8) );
+named!(packet_type<&[u8], u8>, bits!(take_bits!(1u8)) );
 
-named!(sec_header_flag<(&[u8], usize), u8>, take_bits!(1u8) );
+named!(sec_header_flag<&[u8], u8>, bits!(take_bits!(1u8)) );
 
-named!(app_proc_id<(&[u8], usize), u16>, take_bits!(11u8) );
+named!(app_proc_id<&[u8], u16>, bits!(take_bits!(11u8)) );
 
-named!(sequence_flags<(&[u8], usize), u8>, take_bits!(2u8) );
+named!(sequence_flags<&[u8], u8>, bits!(take_bits!(2u8)) );
 
-named!(sequence_count<(&[u8], usize), u16>, take_bits!(14u8) );
+named!(sequence_count<&[u8], u16>, bits!(take_bits!(14u8)) );
 
 named!(data_length<(&[u8], usize), u16>, be_u16);
 
