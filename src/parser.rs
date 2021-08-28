@@ -34,7 +34,7 @@ named!(sequence_flags<&[u8], u8>, bits!(take_bits!(2u8)) );
 
 named!(sequence_count<&[u8], u16>, bits!(take_bits!(14u8)) );
 
-named!(data_length<(&[u8], usize), u16>, be_u16);
+named!(data_length<&[u8], u16>, bits!(take_bits!(16u8)) );
 
 // named!(data_length = |s| {be_u16(s)};
 
