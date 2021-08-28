@@ -54,13 +54,12 @@ named!(pub primary_header<&[u8], PrimaryHeader>, map!(primary_header_parser, |(v
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
+    use super::*;
 
     #[test]
     fn parse_python_spacepacket_primary_header() {
         let raw = b"\x00\x01\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00o\x05\xdcquery";
-    
-        let parsed = parser::primary_header(raw);
+        let parsed = primary_header(raw);
         dbg!(parsed);
     }
 }
