@@ -22,7 +22,7 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-named!(version<(&[u8], usize), u8>, take_bits!(3u8) );
+named!(version<&[u8], u8>, bits!(take_bits!(3u8)) );
 
 named!(packet_type<(&[u8], usize), u8>, take_bits!(1u8) );
 
