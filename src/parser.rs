@@ -3,6 +3,7 @@ use nom::number::complete::be_u16;
 use nom::bytes::complete::take;
 use nom::bits;
 use nom::sequence::tuple;
+use nom::combinator::map;
 
 #[derive(Clone,Debug,PartialEq,Eq)]
 pub struct PrimaryHeader {
@@ -36,24 +37,20 @@ named!(sequence_count<&[u8], u16>, bits!(take_bits!(14u8)) );
 
 named!(data_length<&[u8], u16>, bits!(take_bits!(16u8)) );
 
-// named!(data_length = |s| {be_u16(s)};
+named!(primary_header_parser<&[u8], (u8, u8, u8, u16, u8, u16, u16)>, tuple!(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length));
 
-named!(primary_header_parser<&[u8], (version:u8, packet_type:u8, sec_header_flag:u8, app_proc_id:u16, sequence_flags:u8, sequence_count:u8, data_length:u16)>, tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)));
-
-pub named!(pub primary_header<&[u8], PrimaryHeader>, map(primary_header_parser, |t: (input, (version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length))| {
-	Ok(
-		input, PrimaryHeader {
-			version,
-			packet_type,
-            sec_header_flag,
-            app_proc_id,
-            sequence_flags,
-            sequence_count,
-            data_length
-        }
-    )	
-})); 
-
+named!(pub primary_header<&[u8], PrimaryHeader>, map!(primary_header_parser, |(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)| { 
+	PrimaryHeader {
+        version,
+        packet_type,
+        sec_header_flag,
+        app_proc_id,
+        sequence_flags,
+        sequence_count,
+        data_length
+    }
+        
+}));
 
 #[cfg(test)]
 mod tests {
