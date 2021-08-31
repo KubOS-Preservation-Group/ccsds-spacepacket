@@ -58,9 +58,21 @@ mod tests {
 
     #[test]
     fn parse_python_spacepacket_primary_header() {
-        let raw = b"\x00\x01\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00o\x05\xdcquery";
-        let parsed = primary_header(raw);
-        dbg!(parsed);
+        //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload" 
+        let raw = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x40\xff\xff";
+        let expected = PrimaryHeader {
+            version: 0,
+            packet_type: 0,
+            sec_header_flag: 0,
+            app_proc_id: 0,
+            sequence_flags: 0,
+            sequence_count:0,
+            data_length: 64
+        };
+        let (remaining, parsed) = primary_header(raw).expect("failed to parse header");
+
+        assert_eq!(parsed, expected);
+        assert_eq!(remaining, &[255, 255])
     }
 }
 
