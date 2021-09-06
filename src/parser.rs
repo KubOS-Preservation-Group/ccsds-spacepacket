@@ -24,33 +24,6 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-fn version(input: &[u8] ) -> IResult<&[u8], u8> {
-    take(3u8)(input)
-}
-
-fn packet_type(input: &[u8] ) -> IResult<&[u8], u8> {
-    take(1u8)(input)
-}
-
-fn sec_header_flag(input: &[u8] ) -> IResult<&[u8], u8> {
-    take(1u8)(input)
-}
-
-fn app_proc_id(input: &[u8] ) -> IResult<&[u8], u16> {
-    take(11u8)(input)
-}
-
-fn sequence_flags(input: &[u8] ) -> IResult<&[u8], u8> {
-    take(2u8)(input)
-}
-
-fn sequence_count(input: &[u8] ) -> IResult<&[u8], u16> {
-    take(14u8)(input)
-}
-
-fn data_length(input: &[u8] ) -> IResult<&[u8], u16> {
-    take(16u8)(input)
-}
 
 fn primary_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8, u8, u16, u8, u16, u16)> {
     let version = take(3u8);
