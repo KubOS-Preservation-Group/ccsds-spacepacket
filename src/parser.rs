@@ -7,6 +7,15 @@ use nom::{
     number::streaming::be_u8
 };
 
+
+#[derive(Clone,Debug,PartialEq,Eq)]
+pub struct SpacePacket<'a, T> {
+    pub primary_header: PrimaryHeader,
+    pub secondary_header: Option<T>,
+    pub payload: &'a [u8]
+}
+
+
 #[derive(Clone,Debug,PartialEq,Eq)]
 pub struct PrimaryHeader {
     /// Packet Version Number - 3 bits
