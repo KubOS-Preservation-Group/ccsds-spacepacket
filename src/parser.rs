@@ -2,20 +2,18 @@ use nom::{
     bits::{bits, streaming::take},
     combinator::map,
     error::Error as NomError,
-    IResult,
     sequence::tuple,
+    IResult,
 };
 
-
-#[derive(Clone,Debug,PartialEq,Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SpacePacket<'a, T> {
     pub primary_header: PrimaryHeader,
     pub secondary_header: Option<T>,
-    pub payload: &'a [u8]
+    pub payload: &'a [u8],
 }
 
-
-#[derive(Clone,Debug,PartialEq,Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PrimaryHeader {
     /// Packet Version Number - 3 bits
     pub version: u8,
@@ -33,8 +31,7 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-
-fn primary_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8, u8, u16, u8, u16, u16)> {
+fn primary_header_parser(input: &[u8]) -> IResult<&[u8], (u8, u8, u8, u16, u8, u16, u16)> {
     let version = take(3u8);
     let packet_type = take(1u8);
     let sec_header_flag = take(1u8);
@@ -43,66 +40,89 @@ fn primary_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8, u8, u16, u8, 
     let sequence_count = take(14u8);
     let data_length = take(16u8);
 
-    bits::<_, _, NomError<(&[u8], usize)>, _, _>( tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)))(input)
+    bits::<_, _, NomError<(&[u8], usize)>, _, _>(tuple((
+        version,
+        packet_type,
+        sec_header_flag,
+        app_proc_id,
+        sequence_flags,
+        sequence_count,
+        data_length,
+    )))(input)
 }
 
-pub fn primary_header(input: &[u8] ) -> IResult<&[u8], PrimaryHeader> {
-    map(primary_header_parser, |(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)| { 
-        PrimaryHeader {
+pub fn primary_header(input: &[u8]) -> IResult<&[u8], PrimaryHeader> {
+    map(
+        primary_header_parser,
+        |(
             version,
             packet_type,
             sec_header_flag,
             app_proc_id,
             sequence_flags,
             sequence_count,
-            data_length
-        }
-            
-    })(input)
+            data_length,
+        )| {
+            PrimaryHeader {
+                version,
+                packet_type,
+                sec_header_flag,
+                app_proc_id,
+                sequence_flags,
+                sequence_count,
+                data_length,
+            }
+        },
+    )(input)
 }
 
 //make sec_header_parser optional if you just want to parse generic, no-sec-headers spacepackets
-fn parse_spacepacket<T>(bytes: &[u8], sec_header_parser: fn(&[u8]) -> IResult<&[u8], T>) -> IResult<&[u8], SpacePacket<T>> {
+fn parse_spacepacket<T>(
+    bytes: &[u8],
+    sec_header_parser: fn(&[u8]) -> IResult<&[u8], T>,
+) -> IResult<&[u8], SpacePacket<T>> {
     let (remaining, pri_header) = primary_header(bytes).expect("failed to parse primary header");
 
     let (remaining, sec_header) = if pri_header.sec_header_flag == 1 {
-        let (remaining, parsed_sec_header) = sec_header_parser(remaining).expect("failed to parse secondary header");
+        let (remaining, parsed_sec_header) =
+            sec_header_parser(remaining).expect("failed to parse secondary header");
         (remaining, Some(parsed_sec_header))
     } else {
         (remaining, None)
     };
 
-    Ok((remaining, SpacePacket::<T> {
-        primary_header: pri_header,
-        secondary_header: sec_header,
-        payload: remaining
-    }))
+    Ok((
+        remaining,
+        SpacePacket::<T> {
+            primary_header: pri_header,
+            secondary_header: sec_header,
+            payload: remaining,
+        },
+    ))
 }
-
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use nom::number::streaming::be_u8;
 
-    #[derive(Clone,Debug,PartialEq,Eq)]
+    #[derive(Clone, Debug, PartialEq, Eq)]
     pub struct SecondaryHeader {
         /// Packet Version Number - 3 bits
         pub meme: u8,
         pub meme2: u8,
     }
 
-    //this parser style is inspired by the README of https://github.com/rust-bakery/nom-derive 
-    fn sec_header_parser(input: &[u8] ) -> IResult<&[u8], SecondaryHeader> {
+    //this parser style is inspired by the README of https://github.com/rust-bakery/nom-derive
+    fn sec_header_parser(input: &[u8]) -> IResult<&[u8], SecondaryHeader> {
         let (i, meme) = be_u8(input)?;
         let (i, meme2) = be_u8(i)?;
-        Ok((i, SecondaryHeader{ meme, meme2 }))
+        Ok((i, SecondaryHeader { meme, meme2 }))
     }
 
     #[test]
     fn parse_python_spacepacket_primary_header() {
-        //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload" 
+        //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload"
         let raw = b"\x00\x00\x00\x00\x00\x40\xff\xff";
         let expected = PrimaryHeader {
             version: 0,
@@ -110,8 +130,8 @@ mod tests {
             sec_header_flag: 0,
             app_proc_id: 0,
             sequence_flags: 0,
-            sequence_count:0,
-            data_length: 64
+            sequence_count: 0,
+            data_length: 64,
         };
         let (remaining, parsed) = primary_header(raw).expect("failed to parse header");
 
@@ -121,24 +141,22 @@ mod tests {
 
     #[test]
     fn parse_python_spacepacket_secondary_header() {
-      
         let raw = b"\x08\x00\x00\x00\x00\x40\xff\xff\xff";
-        
+
         let expected_p = PrimaryHeader {
             version: 0,
             packet_type: 0,
             sec_header_flag: 1,
             app_proc_id: 0,
             sequence_flags: 0,
-            sequence_count:0,
-            data_length: 64
+            sequence_count: 0,
+            data_length: 64,
         };
 
-         let expected_s = SecondaryHeader {
+        let expected_s = SecondaryHeader {
             meme: 255,
-            meme2: 255
+            meme2: 255,
         };
-        
 
         let (remaining, parsed) = primary_header(raw).expect("failed to parse header");
 
@@ -151,7 +169,7 @@ mod tests {
 
     #[test]
     fn parse_python_spacepacket() {
-        //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload" 
+        //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload"
         let raw = b"\x08\x00\x00\x00\x00\x03\xff\xff\xff";
         let expected = SpacePacket {
             primary_header: PrimaryHeader {
@@ -160,20 +178,21 @@ mod tests {
                 sec_header_flag: 1,
                 app_proc_id: 0,
                 sequence_flags: 0,
-                sequence_count:0,
-                data_length: 3
+                sequence_count: 0,
+                data_length: 3,
             },
             secondary_header: Some(SecondaryHeader {
                 meme: 255,
-                meme2: 255
+                meme2: 255,
             }),
-            payload: &[255]
+            payload: &[255],
         };
 
-        let (_remaining, parsed) = parse_spacepacket::<SecondaryHeader>(raw, sec_header_parser).expect("failed to parse space packet");
+        let (_remaining, parsed) = parse_spacepacket::<SecondaryHeader>(raw, sec_header_parser)
+            .expect("failed to parse space packet");
 
         assert_eq!(parsed, expected);
-    }    
+    }
 }
 
 // \x00\x01\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00o\x05\xdcquery
