@@ -5,13 +5,7 @@ use nom::{
     sequence::tuple,
     IResult,
 };
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SpacePacket<'a, T> {
-    pub primary_header: PrimaryHeader,
-    pub secondary_header: Option<T>,
-    pub payload: &'a [u8],
-}
+use crate::SpacePacket;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PrimaryHeader {

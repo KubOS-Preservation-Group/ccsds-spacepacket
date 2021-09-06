@@ -18,3 +18,10 @@
 
 //! Packet Definition for SpacePacket
 pub mod parser;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SpacePacket<'a, T> {
+    pub primary_header: parser::PrimaryHeader,
+    pub secondary_header: Option<T>,
+    pub payload: &'a [u8],
+}
