@@ -3,7 +3,8 @@ use nom::{
     combinator::map,
     error::Error as NomError,
     IResult,
-    sequence::tuple
+    sequence::tuple,
+    number::streaming::be_u8
 };
 
 #[derive(Clone,Debug,PartialEq,Eq)]
@@ -74,6 +75,62 @@ mod tests {
         assert_eq!(parsed, expected);
         assert_eq!(remaining, &[255, 255])
     }
+
+    #[test]
+    fn parse_python_spacepacket_secondary_header() {
+      
+        let raw = b"\x08\x00\x00\x00\x00\x40\xff\xff\xff";
+
+        // BEGIN: Stuff the user should implement for secondary headers
+        #[derive(Clone,Debug,PartialEq,Eq)]
+        pub struct SecondaryHeader {
+            /// Packet Version Number - 3 bits
+            pub meme: u8,
+            pub meme2: u8,
+        }
+
+        fn sec_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8)> {
+            let meme = be_u8;
+            let meme2 = be_u8;
+
+            tuple((meme, meme2))(input)
+        }
+
+        pub fn sec_header(input: &[u8] ) -> IResult<&[u8], SecondaryHeader> {
+            map(sec_header_parser, |(meme, meme2)| { 
+                SecondaryHeader {
+                    meme,
+                    meme2
+                }
+            })(input)
+        }
+        // END: Stuff the user should implement for secondary headers 
+        
+        let expected_p = PrimaryHeader {
+            version: 0,
+            packet_type: 0,
+            sec_header_flag: 1,
+            app_proc_id: 0,
+            sequence_flags: 0,
+            sequence_count:0,
+            data_length: 64
+        };
+
+         let expected_s = SecondaryHeader {
+            meme: 255,
+            meme2: 255
+        };
+        
+
+        let (remaining, parsed) = primary_header(raw).expect("failed to parse header");
+
+        assert_eq!(parsed, expected_p);
+        let (remaining, parsed) = sec_header(remaining).expect("failed to parse header");
+        assert_eq!(parsed, expected_s);
+
+        assert_eq!(remaining, &[255])
+    }
+
 }
 
 
