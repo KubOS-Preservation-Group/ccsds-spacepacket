@@ -4,7 +4,6 @@ use nom::{
     error::Error as NomError,
     IResult,
     sequence::tuple,
-    number::streaming::be_u8
 };
 
 
@@ -85,6 +84,7 @@ fn parse_spacepacket<T>(bytes: &[u8], sec_header_parser: fn(&[u8]) -> IResult<&[
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nom::number::streaming::be_u8;
 
     #[derive(Clone,Debug,PartialEq,Eq)]
     pub struct SecondaryHeader {
@@ -170,7 +170,7 @@ mod tests {
             payload: &[255]
         };
 
-        let (remaining, parsed) = parse_spacepacket::<SecondaryHeader>(raw, sec_header_parser).expect("failed to parse space packet");
+        let (_remaining, parsed) = parse_spacepacket::<SecondaryHeader>(raw, sec_header_parser).expect("failed to parse space packet");
 
         assert_eq!(parsed, expected);
     }    
