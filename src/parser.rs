@@ -64,20 +64,11 @@ mod tests {
         pub meme2: u8,
     }
 
-    fn sec_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8)> {
-        let meme = be_u8;
-        let meme2 = be_u8;
-
-        tuple((meme, meme2))(input)
-    }
-
-    pub fn sec_header(input: &[u8] ) -> IResult<&[u8], SecondaryHeader> {
-        map(sec_header_parser, |(meme, meme2)| { 
-            SecondaryHeader {
-                meme,
-                meme2
-            }
-        })(input)
+    //this parser style is inspired by the README of https://github.com/rust-bakery/nom-derive 
+    fn sec_header_parser(input: &[u8] ) -> IResult<&[u8], SecondaryHeader> {
+        let (i, meme) = be_u8(input)?;
+        let (i, meme2) = be_u8(i)?;
+        Ok((i, SecondaryHeader{ meme, meme2 }))
     }
 
     #[test]
@@ -123,7 +114,7 @@ mod tests {
         let (remaining, parsed) = primary_header(raw).expect("failed to parse header");
 
         assert_eq!(parsed, expected_p);
-        let (remaining, parsed) = sec_header(remaining).expect("failed to parse header");
+        let (remaining, parsed) = sec_header_parser(remaining).expect("failed to parse header");
         assert_eq!(parsed, expected_s);
 
         assert_eq!(remaining, &[255])
