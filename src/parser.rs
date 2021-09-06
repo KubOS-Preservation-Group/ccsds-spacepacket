@@ -1,9 +1,10 @@
-use nom::IResult;
-use nom::number::complete::be_u16;
-use nom::bytes::complete::take;
-use nom::bits;
-use nom::sequence::tuple;
-use nom::combinator::map;
+use nom::{
+    bits::{bits, streaming::take},
+    combinator::map,
+    error::Error as NomError,
+    IResult,
+    sequence::tuple
+};
 
 #[derive(Clone,Debug,PartialEq,Eq)]
 pub struct PrimaryHeader {
@@ -23,34 +24,33 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-named!(version<&[u8], u8>, bits!(take_bits!(3u8)) );
 
-named!(packet_type<&[u8], u8>, bits!(take_bits!(1u8)) );
+fn primary_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8, u8, u16, u8, u16, u16)> {
+    let version = take(3u8);
+    let packet_type = take(1u8);
+    let sec_header_flag = take(1u8);
+    let app_proc_id = take(11u8);
+    let sequence_flags = take(2u8);
+    let sequence_count = take(14u8);
+    let data_length = take(16u8);
 
-named!(sec_header_flag<&[u8], u8>, bits!(take_bits!(1u8)) );
+    bits::<_, _, NomError<(&[u8], usize)>, _, _>( tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)))(input)
+}
 
-named!(app_proc_id<&[u8], u16>, bits!(take_bits!(11u8)) );
-
-named!(sequence_flags<&[u8], u8>, bits!(take_bits!(2u8)) );
-
-named!(sequence_count<&[u8], u16>, bits!(take_bits!(14u8)) );
-
-named!(data_length<&[u8], u16>, bits!(take_bits!(16u8)) );
-
-named!(primary_header_parser<&[u8], (u8, u8, u8, u16, u8, u16, u16)>, tuple!(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length));
-
-named!(pub primary_header<&[u8], PrimaryHeader>, map!(primary_header_parser, |(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)| { 
-	PrimaryHeader {
-        version,
-        packet_type,
-        sec_header_flag,
-        app_proc_id,
-        sequence_flags,
-        sequence_count,
-        data_length
-    }
-        
-}));
+pub fn primary_header(input: &[u8] ) -> IResult<&[u8], PrimaryHeader> {
+    map(primary_header_parser, |(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)| { 
+        PrimaryHeader {
+            version,
+            packet_type,
+            sec_header_flag,
+            app_proc_id,
+            sequence_flags,
+            sequence_count,
+            data_length
+        }
+            
+    })(input)
+}
 
 #[cfg(test)]
 mod tests {
@@ -59,7 +59,7 @@ mod tests {
     #[test]
     fn parse_python_spacepacket_primary_header() {
         //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload" 
-        let raw = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x40\xff\xff";
+        let raw = b"\x00\x00\x00\x00\x00\x40\xff\xff";
         let expected = PrimaryHeader {
             version: 0,
             packet_type: 0,
