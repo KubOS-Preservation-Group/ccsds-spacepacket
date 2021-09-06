@@ -1,9 +1,10 @@
-use nom::IResult;
-use nom::number::complete::be_u16;
-use nom::bytes::complete::take;
-use nom::bits;
-use nom::sequence::tuple;
-use nom::combinator::map;
+use nom::{
+    bits::{bits, streaming::take},
+    combinator::map,
+    error::Error as NomError,
+    IResult,
+    sequence::tuple
+};
 
 #[derive(Clone,Debug,PartialEq,Eq)]
 pub struct PrimaryHeader {
@@ -52,7 +53,7 @@ fn data_length(input: &[u8] ) -> IResult<&[u8], u16> {
 }
 
 fn primary_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8, u8, u16, u8, u16, u16)> {
-    bits::<_, _, Error<(&[u8], usize)>, _, _>( tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)))(input)
+    bits::<_, _, NomError<(&[u8], usize)>, _, _>(tuple((take(3u8), take(1u8), take(1u8), take(11u8), take(2u8), take(14u8), take(16u8))))(input)
 }
 
 pub fn primary_header(input: &[u8] ) -> IResult<&[u8], PrimaryHeader> {
