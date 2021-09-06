@@ -57,6 +57,29 @@ pub fn primary_header(input: &[u8] ) -> IResult<&[u8], PrimaryHeader> {
 mod tests {
     use super::*;
 
+    #[derive(Clone,Debug,PartialEq,Eq)]
+    pub struct SecondaryHeader {
+        /// Packet Version Number - 3 bits
+        pub meme: u8,
+        pub meme2: u8,
+    }
+
+    fn sec_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8)> {
+        let meme = be_u8;
+        let meme2 = be_u8;
+
+        tuple((meme, meme2))(input)
+    }
+
+    pub fn sec_header(input: &[u8] ) -> IResult<&[u8], SecondaryHeader> {
+        map(sec_header_parser, |(meme, meme2)| { 
+            SecondaryHeader {
+                meme,
+                meme2
+            }
+        })(input)
+    }
+
     #[test]
     fn parse_python_spacepacket_primary_header() {
         //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload" 
@@ -80,31 +103,6 @@ mod tests {
     fn parse_python_spacepacket_secondary_header() {
       
         let raw = b"\x08\x00\x00\x00\x00\x40\xff\xff\xff";
-
-        // BEGIN: Stuff the user should implement for secondary headers
-        #[derive(Clone,Debug,PartialEq,Eq)]
-        pub struct SecondaryHeader {
-            /// Packet Version Number - 3 bits
-            pub meme: u8,
-            pub meme2: u8,
-        }
-
-        fn sec_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8)> {
-            let meme = be_u8;
-            let meme2 = be_u8;
-
-            tuple((meme, meme2))(input)
-        }
-
-        pub fn sec_header(input: &[u8] ) -> IResult<&[u8], SecondaryHeader> {
-            map(sec_header_parser, |(meme, meme2)| { 
-                SecondaryHeader {
-                    meme,
-                    meme2
-                }
-            })(input)
-        }
-        // END: Stuff the user should implement for secondary headers 
         
         let expected_p = PrimaryHeader {
             version: 0,
