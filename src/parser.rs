@@ -23,34 +23,52 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-named!(version<&[u8], u8>, bits!(take_bits!(3u8)) );
+fn version(input: &[u8] ) -> IResult<&[u8], u8> {
+    take(3u8)(input)
+}
 
-named!(packet_type<&[u8], u8>, bits!(take_bits!(1u8)) );
+fn packet_type(input: &[u8] ) -> IResult<&[u8], u8> {
+    take(1u8)(input)
+}
 
-named!(sec_header_flag<&[u8], u8>, bits!(take_bits!(1u8)) );
+fn sec_header_flag(input: &[u8] ) -> IResult<&[u8], u8> {
+    take(1u8)(input)
+}
 
-named!(app_proc_id<&[u8], u16>, bits!(take_bits!(11u8)) );
+fn app_proc_id(input: &[u8] ) -> IResult<&[u8], u16> {
+    take(11u8)(input)
+}
 
-named!(sequence_flags<&[u8], u8>, bits!(take_bits!(2u8)) );
+fn sequence_flags(input: &[u8] ) -> IResult<&[u8], u8> {
+    take(2u8)(input)
+}
 
-named!(sequence_count<&[u8], u16>, bits!(take_bits!(14u8)) );
+fn sequence_count(input: &[u8] ) -> IResult<&[u8], u16> {
+    take(14u8)(input)
+}
 
-named!(data_length<&[u8], u16>, bits!(take_bits!(16u8)) );
+fn data_length(input: &[u8] ) -> IResult<&[u8], u16> {
+    take(16u8)(input)
+}
 
-named!(primary_header_parser<&[u8], (u8, u8, u8, u16, u8, u16, u16)>, tuple!(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length));
+fn primary_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8, u8, u16, u8, u16, u16)> {
+    bits::<_, _, Error<(&[u8], usize)>, _, _>( tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)))(input)
+}
 
-named!(pub primary_header<&[u8], PrimaryHeader>, map!(primary_header_parser, |(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)| { 
-	PrimaryHeader {
-        version,
-        packet_type,
-        sec_header_flag,
-        app_proc_id,
-        sequence_flags,
-        sequence_count,
-        data_length
-    }
-        
-}));
+pub fn primary_header(input: &[u8] ) -> IResult<&[u8], PrimaryHeader> {
+    map(primary_header_parser, |(version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)| { 
+        PrimaryHeader {
+            version,
+            packet_type,
+            sec_header_flag,
+            app_proc_id,
+            sequence_flags,
+            sequence_count,
+            data_length
+        }
+            
+    })(input)
+}
 
 #[cfg(test)]
 mod tests {
