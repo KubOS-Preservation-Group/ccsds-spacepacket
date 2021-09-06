@@ -149,7 +149,31 @@ mod tests {
         assert_eq!(remaining, &[255])
     }
 
-}
+    #[test]
+    fn parse_python_spacepacket() {
+        //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload" 
+        let raw = b"\x08\x00\x00\x00\x00\x03\xff\xff\xff";
+        let expected = SpacePacket {
+            primary_header: PrimaryHeader {
+                version: 0,
+                packet_type: 0,
+                sec_header_flag: 1,
+                app_proc_id: 0,
+                sequence_flags: 0,
+                sequence_count:0,
+                data_length: 3
+            },
+            secondary_header: Some(SecondaryHeader {
+                meme: 255,
+                meme2: 255
+            }),
+            payload: &[255]
+        };
 
+        let (remaining, parsed) = parse_spacepacket::<SecondaryHeader>(raw, sec_header_parser).expect("failed to parse space packet");
+
+        assert_eq!(parsed, expected);
+    }    
+}
 
 // \x00\x01\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00o\x05\xdcquery
