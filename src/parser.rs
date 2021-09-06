@@ -53,7 +53,15 @@ fn data_length(input: &[u8] ) -> IResult<&[u8], u16> {
 }
 
 fn primary_header_parser(input: &[u8] ) -> IResult<&[u8], (u8, u8, u8, u16, u8, u16, u16)> {
-    bits::<_, _, NomError<(&[u8], usize)>, _, _>(tuple((take(3u8), take(1u8), take(1u8), take(11u8), take(2u8), take(14u8), take(16u8))))(input)
+    let version = take(3u8);
+    let packet_type = take(1u8);
+    let sec_header_flag = take(1u8);
+    let app_proc_id = take(11u8);
+    let sequence_flags = take(2u8);
+    let sequence_count = take(14u8);
+    let data_length = take(16u8);
+
+    bits::<_, _, NomError<(&[u8], usize)>, _, _>( tuple((version, packet_type, sec_header_flag, app_proc_id, sequence_flags, sequence_count, data_length)))(input)
 }
 
 pub fn primary_header(input: &[u8] ) -> IResult<&[u8], PrimaryHeader> {
