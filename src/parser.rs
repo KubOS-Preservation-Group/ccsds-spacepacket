@@ -68,9 +68,13 @@ fn parse_spacepacket<T>(bytes: &[u8], sec_header_parser: fn(&[u8]) -> IResult<&[
     let (remaining, pri_header) = primary_header(bytes).expect("failed to parse primary header");
 
     let sec_header = None;
-
+    dbg!(remaining);
     if (pri_header.sec_header_flag == 1) {
         let (remaining, sec_header) = sec_header_parser(remaining).expect("failed to parse secondary header");
+
+        let sec_header = Some(sec_header);
+        dbg!(remaining);
+        //its a scope issue preventing the value of the sec header form leaving this scope
     }
 
     Ok((remaining, SpacePacket::<T> {
