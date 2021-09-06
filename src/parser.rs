@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn parse_python_spacepacket_primary_header() {
         //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload" 
-        let raw = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x40\xff\xff";
+        let raw = b"\x00\x00\x00\x00\x00\x40\xff\xff";
         let expected = PrimaryHeader {
             version: 0,
             packet_type: 0,
