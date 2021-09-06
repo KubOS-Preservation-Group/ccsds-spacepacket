@@ -62,6 +62,26 @@ pub fn primary_header(input: &[u8] ) -> IResult<&[u8], PrimaryHeader> {
     })(input)
 }
 
+//make sec_header_parser optional if you just want to parse generic, no-sec-headers spacepackets
+fn parse_spacepacket<T>(bytes: &[u8], sec_header_parser: fn(&[u8]) -> IResult<&[u8], T>) -> IResult<&[u8], SpacePacket<T>> {
+
+    let (remaining, pri_header) = primary_header(bytes).expect("failed to parse primary header");
+
+    let sec_header = None;
+
+    if (pri_header.sec_header_flag == 1) {
+        let (remaining, sec_header) = sec_header_parser(remaining).expect("failed to parse secondary header");
+    }
+
+    Ok((remaining, SpacePacket::<T> {
+        primary_header: pri_header,
+        secondary_header: sec_header,
+        payload: remaining
+    }))
+}
+
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
