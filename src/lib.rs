@@ -17,5 +17,5 @@
 //  - Adrian Edwards
 
 //! Packet Definition for SpacePacket
-pub mod parser;
+pub mod primaryheader;
 
