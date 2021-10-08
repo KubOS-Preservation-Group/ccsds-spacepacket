@@ -19,3 +19,6 @@
 //! Packet Definition for SpacePacket
 pub mod primaryheader;
 
+use failure::Error;
+
+type ParseResult<T> = Result<T, Error>;

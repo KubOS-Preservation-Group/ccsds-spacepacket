@@ -20,7 +20,7 @@
 // use crate::CommsResult;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
-use failure::Error;
+use crate::ParseResult;
 
 
 #[derive(Eq, Debug, PartialEq, Clone)]
@@ -41,11 +41,10 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-pub type PHResult<T> = Result<T, Error>;
 
 impl PrimaryHeader {
 
-    fn parse(raw: &[u8]) -> PHResult<PrimaryHeader> {
+    fn parse(raw: &[u8]) -> ParseResult<PrimaryHeader> {
         let mut reader = Cursor::new(raw.to_vec());
 
         let header_0 = reader.read_u16::<BigEndian>()?;
@@ -70,7 +69,7 @@ impl PrimaryHeader {
             })
     }
 
-    fn to_bytes(&self) -> PHResult<Vec<u8>> {
+    fn to_bytes(&self) -> ParseResult<Vec<u8>> {
         let mut bytes = vec![];
 
         let header_0: u16 = (self.app_proc_id) as u16
