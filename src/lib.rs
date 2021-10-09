@@ -18,6 +18,7 @@
 
 //! Packet Definition for SpacePacket
 pub mod primaryheader;
+mod types;
 
 use failure::Error;
 
