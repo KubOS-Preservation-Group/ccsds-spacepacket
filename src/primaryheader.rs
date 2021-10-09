@@ -71,10 +71,10 @@ impl PrimaryHeader {
 
     fn to_bytes(&self) -> ParseResult<Vec<u8>> {
         let mut bytes = vec![];
-        //TODO: look into this two-stage casting from enum to u16
+        
         let header_0: u16 = (self.app_proc_id) as u16
-            | u16::from(self.sec_header_flag as u8) << 11
-            | u16::from(self.packet_type as u8) << 12
+            | u16::from(self.sec_header_flag) << 11
+            | u16::from(self.packet_type) << 12
             | u16::from(self.version) << 13;
 
         let header_1 = (self.sequence_count as u16)

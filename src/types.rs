@@ -21,25 +21,36 @@ impl Default for PacketType {
     }
 }
 
-impl From<u8> for PacketType {
-    fn from(byte: u8) -> PacketType {
-        match byte {
-            0 => PacketType::Data,
-            1 => PacketType::Command,
-            _ => PacketType::Unknown
-        }
-    }
+/// Macro for generating implementations of [`From<T>`] for [`PacketType`]
+/// and [`From<PacketType>`] for `T` for some type `T`.
+macro_rules! impl_packet_type_conv {
+    ( $($T:ty)+ ) => {
+        $(
+            impl From<$T> for $crate::types::PacketType {
+                fn from(byte: $T) -> $crate::types::PacketType {
+                    match byte {
+                        0 => $crate::types::PacketType::Data,
+                        1 => $crate::types::PacketType::Command,
+                        _ => $crate::types::PacketType::Unknown,
+                    }
+                }
+            }
+
+            impl From<$crate::types::PacketType> for $T {
+                fn from(packet_type: $crate::types::PacketType) -> $T {
+                    match packet_type {
+                        $crate::types::PacketType::Data | $crate::types::PacketType::Unknown => 0,
+                        $crate::types::PacketType::Command => 1,
+                    }
+                }
+            }
+        )+
+    };
 }
 
-impl From<PacketType> for u8 {
-    fn from(packet_type: PacketType) -> u8 {
-        match packet_type { 
-            PacketType::Data    => 0,
-            PacketType::Command => 1,
-            PacketType::Unknown => 0,
-        }
-    }
-}
+// To add implementations for more types, just add them to the list of types being
+// passed to the invocation of impl_packet_type_conv here.
+impl_packet_type_conv! { u8 u16 }
 
 /// The secondary header flag indicates whether there is another header
 /// following the primary header (Present) or not (NotPresent).
@@ -62,26 +73,36 @@ impl Default for SecondaryHeaderFlag {
     }
 }
 
-impl From<u8> for SecondaryHeaderFlag {
-    fn from(byte: u8) -> SecondaryHeaderFlag {
-        match byte {
-            0 => SecondaryHeaderFlag::NotPresent,
-            1 => SecondaryHeaderFlag::Present,
-            _ => SecondaryHeaderFlag::Unknown
-        }
-    }
+/// Macro for generating implementations of [`From<T>`] for [`SecondaryHeaderFlag`]
+/// and [`From<SecondaryHeaderFlag>`] for `T` for some type `T`.
+macro_rules! impl_sec_header_flag_conv {
+    ( $($T:ty)+ ) => {
+        $(
+            impl From<$T> for $crate::types::SecondaryHeaderFlag {
+                fn from(byte: $T) -> $crate::types::SecondaryHeaderFlag {
+                    match byte {
+                        0 => $crate::types::SecondaryHeaderFlag::NotPresent,
+                        1 => $crate::types::SecondaryHeaderFlag::Present,
+                        _ => $crate::types::SecondaryHeaderFlag::Unknown,
+                    }
+                }
+            }
+
+            impl From<$crate::types::SecondaryHeaderFlag> for $T {
+                fn from(packet_type: $crate::types::SecondaryHeaderFlag) -> $T {
+                    match packet_type {
+                        $crate::types::SecondaryHeaderFlag::NotPresent | $crate::types::SecondaryHeaderFlag::Unknown => 0,
+                        $crate::types::SecondaryHeaderFlag::Present => 1,
+                    }
+                }
+            }
+        )+
+    };
 }
 
-impl From<SecondaryHeaderFlag> for u8 {
-    fn from(flag: SecondaryHeaderFlag) -> u8 {
-        match flag {
-            SecondaryHeaderFlag::NotPresent => 0,
-            SecondaryHeaderFlag::Present    => 1,
-            SecondaryHeaderFlag::Unknown    => 0
-        }
-    }
-}
-
+// To add implementations for more types, just add them to the list of types being
+// passed to the invocation of impl_sec_header_flag_conv here.
+impl_sec_header_flag_conv! { u8 u16 }
 
 /// The sequence flag indicates the interpretation of the sequence count.
 /// Continuation- the sequence count indicates the block in a series of packets
