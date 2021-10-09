@@ -18,10 +18,10 @@
 
 // use crate::packet::{LinkPacket, PayloadType};
 // use crate::CommsResult;
+use crate::types;
+use crate::ParseResult;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
-use crate::ParseResult;
-use crate::types;
 
 #[derive(Eq, Debug, PartialEq, Clone)]
 pub struct PrimaryHeader {
@@ -41,9 +41,7 @@ pub struct PrimaryHeader {
     pub data_length: u16,
 }
 
-
 impl PrimaryHeader {
-
     fn parse(raw: &[u8]) -> ParseResult<PrimaryHeader> {
         let mut reader = Cursor::new(raw.to_vec());
 
@@ -59,26 +57,25 @@ impl PrimaryHeader {
 
         let data_length = reader.read_u16::<BigEndian>()?;
         Ok(PrimaryHeader {
-                version,
-                packet_type,
-                sec_header_flag,
-                app_proc_id,
-                sequence_flags,
-                sequence_count,
-                data_length,
-            })
+            version,
+            packet_type,
+            sec_header_flag,
+            app_proc_id,
+            sequence_flags,
+            sequence_count,
+            data_length,
+        })
     }
 
     fn to_bytes(&self) -> ParseResult<Vec<u8>> {
         let mut bytes = vec![];
-        
+
         let header_0: u16 = (self.app_proc_id) as u16
             | u16::from(self.sec_header_flag) << 11
             | u16::from(self.packet_type) << 12
             | u16::from(self.version) << 13;
 
-        let header_1 = (self.sequence_count as u16)
-            | u16::from(self.sequence_flags) << 14;
+        let header_1 = (self.sequence_count as u16) | u16::from(self.sequence_flags) << 14;
 
         let header_2 = self.data_length;
 
@@ -92,8 +89,8 @@ impl PrimaryHeader {
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
     use crate::primaryheader::PrimaryHeader;
+    use crate::*;
 
     #[test]
     fn parse_python_spacepacket_primary_header() {
