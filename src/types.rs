@@ -31,6 +31,12 @@ impl From<u8> for PacketType {
     }
 }
 
+impl From<u16> for PacketType {
+    fn from(byte: u16) -> PacketType {
+        PacketType::from(byte as u8)
+    }
+}
+
 impl From<PacketType> for u8 {
     fn from(packet_type: PacketType) -> u8 {
         match packet_type { 
@@ -38,6 +44,12 @@ impl From<PacketType> for u8 {
             PacketType::Command => 1,
             PacketType::Unknown => 0,
         }
+    }
+}
+
+impl From<PacketType> for u16 {
+    fn from(packet_type: PacketType) -> u16 {
+        u8::from(packet_type) as u16
     }
 }
 
@@ -72,6 +84,12 @@ impl From<u8> for SecondaryHeaderFlag {
     }
 }
 
+impl From<u16> for SecondaryHeaderFlag {
+    fn from(byte: u16) -> SecondaryHeaderFlag {
+        SecondaryHeaderFlag::from(byte as u8)
+    }
+}
+
 impl From<SecondaryHeaderFlag> for u8 {
     fn from(flag: SecondaryHeaderFlag) -> u8 {
         match flag {
@@ -82,6 +100,11 @@ impl From<SecondaryHeaderFlag> for u8 {
     }
 }
 
+impl From<SecondaryHeaderFlag> for u16 {
+    fn from(flag: SecondaryHeaderFlag) -> u16 {
+       u8::from(flag) as u16
+    }
+}
 
 /// The sequence flag indicates the interpretation of the sequence count.
 /// Continuation- the sequence count indicates the block in a series of packets
@@ -120,6 +143,12 @@ impl From<u8> for SeqFlag {
             3 => SeqFlag::Unsegmented,
             _ => SeqFlag::Unknown
         }
+    }
+}
+
+impl From<u16> for SeqFlag {
+    fn from(byte: u16) -> SeqFlag {
+        SeqFlag::from(byte as u8)
     }
 }
 
