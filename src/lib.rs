@@ -18,8 +18,8 @@
 
 //! Packet Definition for SpacePacket
 pub mod primaryheader;
-mod types;
+pub mod types;
 
 use failure::Error;
 
-type ParseResult<T> = Result<T, Error>;
+pub type ParseResult<T> = Result<T, Error>;
