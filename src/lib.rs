@@ -17,7 +17,8 @@
 //  - Adrian Edwards
 
 //! Packet Definition for SpacePacket
-pub mod primaryheader;
+mod primaryheader;
+pub use primaryheader::PrimaryHeader;
 pub mod types;
 
 use failure::Error;
