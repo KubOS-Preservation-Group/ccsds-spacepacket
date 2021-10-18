@@ -44,7 +44,7 @@ pub struct PrimaryHeader {
 
 impl PrimaryHeader {
 
-    fn parse(raw: &[u8]) -> ParseResult<PrimaryHeader> {
+    fn parse(raw: &[u8]) -> ParseResult<(PrimaryHeader, Vec<u8>)> {
         let mut reader = Cursor::new(raw.to_vec());
 
         let header_0 = reader.read_u16::<BigEndian>()?;
@@ -58,7 +58,11 @@ impl PrimaryHeader {
         let sequence_count = (header_1 & 0x3FFF) as u16;
 
         let data_length = reader.read_u16::<BigEndian>()?;
-        Ok(PrimaryHeader {
+
+        let pos = reader.position() as usize;
+        let remaining = raw[pos..].to_vec();
+
+        Ok((PrimaryHeader {
                 version,
                 packet_type,
                 sec_header_flag,
@@ -66,7 +70,7 @@ impl PrimaryHeader {
                 sequence_flags,
                 sequence_count,
                 data_length,
-            })
+            }, remaining))
     }
 
     fn to_bytes(&self) -> ParseResult<Vec<u8>> {
