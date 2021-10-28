@@ -44,7 +44,7 @@ pub struct PrimaryHeader {
 
 impl PrimaryHeader {
 
-    fn parse(raw: &[u8]) -> ParseResult<(PrimaryHeader, Vec<u8>)> {
+    pub fn parse(raw: &[u8]) -> ParseResult<(PrimaryHeader, Vec<u8>)> {
         let mut reader = Cursor::new(raw.to_vec());
 
         let header_0 = reader.read_u16::<BigEndian>()?;
@@ -73,7 +73,7 @@ impl PrimaryHeader {
             }, remaining))
     }
 
-    fn to_bytes(&self) -> ParseResult<Vec<u8>> {
+    pub fn to_bytes(&self) -> ParseResult<Vec<u8>> {
         let mut bytes = vec![];
         //TODO: look into this two-stage casting from enum to u16
         let header_0: u16 = (self.app_proc_id) as u16
