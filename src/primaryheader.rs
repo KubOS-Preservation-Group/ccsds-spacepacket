@@ -112,8 +112,9 @@ mod tests {
             sequence_count: 0,
             data_length: 64,
         };
-        let parsed = PrimaryHeader::parse(raw).expect("failed to parse header");
+        let (parsed, remaining) = PrimaryHeader::parse(raw).expect("failed to parse header");
 
         assert_eq!(parsed, expected);
+        assert_eq!(remaining, [255,255])
     }
 }
