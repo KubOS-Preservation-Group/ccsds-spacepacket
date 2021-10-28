@@ -9,6 +9,10 @@ description = "This library attempts to implement a general-purpose parser for S
 # The Secondary Header parsing is accomplished by allowing users of the library to pass in a parser that can interperet the Secondary Header as specified by their project or organisation.
 readme = "README.md"
 repository = "https://github.com/KubOS-Preservation-Group/ccsds-spacepacket"
+exclude = [
+    "docs/*",
+	".github/*"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
