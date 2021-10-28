@@ -17,9 +17,10 @@
 //  - Adrian Edwards
 
 //! Packet Definition for SpacePacket
-pub mod primaryheader;
-mod types;
+mod primaryheader;
+pub use primaryheader::PrimaryHeader;
+pub mod types;
 
 use failure::Error;
 
-type ParseResult<T> = Result<T, Error>;
+pub type ParseResult<T> = Result<T, Error>;
