@@ -5,7 +5,7 @@ authors = ["Adrian Edwards <17362949+MoralCode@users.noreply.github.com>"]
 edition = "2018"
 license = "Apache-2.0"
 keywords = ["aerospace", "parser"]
-description = "This library attempts to implement a general-purpose parser for Space Packets that can interperet both the generic aspects of the space packet protocol (i.e. the Primary Header) in addition to any custom fields supplied within the Secondary Headers.\n\nThis Secondary Header parsing is accomplished by allowing users of the library to pass in a parser that can interperet the Secondary Header as specified by their project or organisation."
+description = "This library attempts to implement a general-purpose parser for Space Packets that can interperet both the generic aspects of the space packet protocol (i.e. the Primary Header) in addition to any custom fields supplied within the Secondary Headers.\n\nAlthough, this library currently just does Primary Headers, the future goal is to make it a more comprehensive SpacePacket parser. The Secondary Header parsing is accomplished by allowing users of the library to pass in a parser that can interperet the Secondary Header as specified by their project or organisation."
 readme = "README.md"
 repository = "https://github.com/KubOS-Preservation-Group/ccsds-spacepacket"
 
