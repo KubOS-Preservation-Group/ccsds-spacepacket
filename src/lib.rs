@@ -20,7 +20,3 @@
 mod primaryheader;
 pub use primaryheader::PrimaryHeader;
 pub mod types;
-
-use failure::Error;
-
-pub type ParseResult<T> = Result<T, Error>;
