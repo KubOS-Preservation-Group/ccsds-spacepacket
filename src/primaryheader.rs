@@ -68,9 +68,35 @@ mod tests {
             sequence_count: 0,
             data_length: 64,
         };
+
         let (rest, parsed) = PrimaryHeader::from_bytes((raw, 0)).expect("failed to parse header");
 
         assert_eq!(parsed, expected);
-        assert_eq!(rest.0, [255, 255])
+        assert_eq!(rest.0, [255,255])
+    }
+
+    #[test]
+    fn parse_incomplete_primary_header() {
+        //this is the equivalent of an all-zero primary header except for a data length of 64 followed by two bytes set to all 1 as a "payload"
+        let raw_short = b"\x00\x00\xc0\x00\x00";
+        let expected = PrimaryHeader {
+            version: 0,
+            packet_type: types::PacketType::Data,
+            sec_header_flag: types::SecondaryHeaderFlag::NotPresent,
+            app_proc_id: 0,
+            sequence_flags: types::SeqFlag::Unsegmented,
+            sequence_count: 0,
+            data_length: 64,
+        };
+        let inc = PrimaryHeader::from_bytes((raw_short, 0));
+
+        assert_eq!(inc.is_err(), true);
+
+        let raw = b"\x00\x00\xc0\x00\x00\x40";
+
+        
+        let (rest, parsed) = PrimaryHeader::from_bytes((raw, 0)).expect("failed to parse header");
+
+        assert_eq!(parsed, expected);
     }
 }
