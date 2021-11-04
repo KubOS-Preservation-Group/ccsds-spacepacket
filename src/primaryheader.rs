@@ -47,6 +47,8 @@ pub struct PrimaryHeader {
     /// Packet Data Length - 2 bytes
     #[deku(endian = "big")]
     pub data_length: u16,
+    // TODO: maybe figure out if https://docs.rs/deku/0.12.4/deku/#vec is appropriate here
+
 }
 
 #[cfg(test)]
