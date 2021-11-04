@@ -22,3 +22,7 @@ The Secondary Header and Payload make up the "User Data Field" and at least one 
 This library attempts to implement a general-purpose parser for Space Packets that can interperet both the generic aspects of the space packet protocol (i.e. the Primary Header) in addition to any custom fields supplied within the Secondary Headers.
 
 This Secondary Header parsing is accomplished by allowing users of the library to pass in a parser that can interperet the Secondary Header as specified by their project or organisation.
+
+
+## Current status
+Currently this library just implements Primary Header parsing, but expanding it to be able to deal with a complete, generic spacepacket (think of generics in programming) with user defined custom secondary headers is one of the projects main goals.
