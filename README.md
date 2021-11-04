@@ -26,3 +26,27 @@ This Secondary Header parsing is accomplished by allowing users of the library t
 
 ## Current status
 Currently this library just implements Primary Header parsing, but expanding it to be able to deal with a complete, generic spacepacket (think of generics in programming) with user defined custom secondary headers is one of the projects main goals.
+
+
+## Usage
+
+```rust
+	// say you have some bytes you want to turn into a PrimaryHeader
+	let raw = b"\x00\x00\xc0\x00\x00\x40\xff\xff";
+
+	let expected = PrimaryHeader {
+		version: 0,
+		packet_type: types::PacketType::Data,
+		sec_header_flag: types::SecondaryHeaderFlag::NotPresent,
+		app_proc_id: 0,
+		sequence_flags: types::SeqFlag::Unsegmented,
+		sequence_count: 0,
+		data_length: 64,
+	};
+
+	// do the parsing and save the parsed header and any remaining bytes
+	let (rest, parsed) = PrimaryHeader::from_bytes((raw, 0)).expect("failed to parse header");
+
+	assert_eq!(parsed, expected);
+	assert_eq!(rest.0, [255,255])
+```
