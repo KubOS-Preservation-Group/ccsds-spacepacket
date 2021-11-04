@@ -1,6 +1,6 @@
 # CCSDS Space Packet Protocol
 
-![Crates.io](https://img.shields.io/crates/v/ccsds-spacepacket) ![Crates.io (recent)](https://img.shields.io/crates/dr/ccsds-spacepacket)
+[![Crates.io](https://img.shields.io/crates/v/ccsds-spacepacket)](https://crates.io/crates/ccsds_spacepacket) [![Crates.io (recent)](https://img.shields.io/crates/dr/ccsds-spacepacket)](https://crates.io/crates/ccsds_spacepacket)
 
 This is a rust implementation of the [CCSDS Space Packet Protocol](https://public.ccsds.org/Pubs/133x0b2e1.pdf).
 
