@@ -18,5 +18,7 @@
 
 //! Packet Definition for SpacePacket
 mod primaryheader;
+mod spacepacket;
 pub use primaryheader::PrimaryHeader;
+pub use spacepacket::SpacePacket;
 pub mod types;
