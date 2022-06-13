@@ -48,7 +48,6 @@ pub struct PrimaryHeader {
     #[deku(endian = "big")]
     pub data_length: u16,
     // TODO: maybe figure out if https://docs.rs/deku/0.12.4/deku/#vec is appropriate here
-
 }
 
 #[cfg(test)]
@@ -72,7 +71,7 @@ mod tests {
         let (rest, parsed) = PrimaryHeader::from_bytes((raw, 0)).expect("failed to parse header");
 
         assert_eq!(parsed, expected);
-        assert_eq!(rest.0, [255,255])
+        assert_eq!(rest.0, [255, 255])
     }
 
     #[test]
@@ -94,8 +93,7 @@ mod tests {
 
         let raw = b"\x00\x00\xc0\x00\x00\x40";
 
-        
-        let (rest, parsed) = PrimaryHeader::from_bytes((raw, 0)).expect("failed to parse header");
+        let (_rest, parsed) = PrimaryHeader::from_bytes((raw, 0)).expect("failed to parse header");
 
         assert_eq!(parsed, expected);
     }
