@@ -19,4 +19,4 @@ exclude = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-deku = "0.12"
+deku = "0.13"
